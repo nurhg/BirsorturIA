@@ -1,18 +1,15 @@
-// Chatbot API Interface JavaScript
+// Modern Chat Interface JavaScript
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize the interface
     initializeInterface();
     checkAPIStatus();
     setupEventListeners();
+    autoResizeTextarea();
 });
 
 function initializeInterface() {
-    // Initialize Bootstrap tabs
-    const tabTriggerList = document.querySelectorAll('#mainTabs button');
-    tabTriggerList.forEach(trigger => {
-        new bootstrap.Tab(trigger);
-    });
+    // Setup sidebar toggle functionality
+    setupSidebarToggle();
     
     // Setup AI options toggle
     const processWithAI = document.getElementById('process-with-ai');
@@ -21,17 +18,80 @@ function initializeInterface() {
     processWithAI.addEventListener('change', function() {
         aiOptions.style.display = this.checked ? 'block' : 'none';
     });
+    
+    // Auto-focus on message input
+    const messageInput = document.getElementById('chat-message');
+    messageInput.focus();
+}
+
+function setupSidebarToggle() {
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const sidebarClose = document.getElementById('sidebar-close');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    const mainContent = document.getElementById('main-content');
+    
+    function openSidebar() {
+        sidebar.classList.add('open');
+        sidebarOverlay.classList.add('active');
+        if (window.innerWidth >= 1024) {
+            mainContent.classList.add('sidebar-open');
+        }
+    }
+    
+    function closeSidebar() {
+        sidebar.classList.remove('open');
+        sidebarOverlay.classList.remove('active');
+        mainContent.classList.remove('sidebar-open');
+    }
+    
+    sidebarToggle.addEventListener('click', openSidebar);
+    sidebarClose.addEventListener('click', closeSidebar);
+    sidebarOverlay.addEventListener('click', closeSidebar);
+    
+    // Auto-open sidebar on desktop
+    if (window.innerWidth >= 1024) {
+        openSidebar();
+    }
+    
+    // Handle window resize
+    window.addEventListener('resize', function() {
+        if (window.innerWidth >= 1024) {
+            openSidebar();
+        } else {
+            closeSidebar();
+        }
+    });
 }
 
 function setupEventListeners() {
     // Chat form submission
     document.getElementById('chat-form').addEventListener('submit', handleChatSubmission);
     
-    // Upload form submission
-    document.getElementById('upload-form').addEventListener('submit', handleUploadSubmission);
+    // File attachment button
+    document.getElementById('attach-file-btn').addEventListener('click', function() {
+        document.getElementById('file-input').click();
+    });
     
     // File input change
     document.getElementById('file-input').addEventListener('change', handleFileSelection);
+    
+    // Enter key to submit (Shift+Enter for new line)
+    document.getElementById('chat-message').addEventListener('keydown', function(event) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            document.getElementById('chat-form').dispatchEvent(new Event('submit'));
+        }
+    });
+}
+
+function autoResizeTextarea() {
+    const textarea = document.getElementById('chat-message');
+    
+    textarea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
 }
 
 async function checkAPIStatus() {
@@ -44,15 +104,15 @@ async function checkAPIStatus() {
         if (response.ok && data.status === 'healthy') {
             statusElement.innerHTML = `
                 <span class="status-indicator status-healthy"></span>
-                <span class="text-success">API is healthy and ready</span>
+                <span class="text-success">API conectada</span>
             `;
         } else {
-            throw new Error('API unhealthy');
+            throw new Error('API no disponible');
         }
     } catch (error) {
         statusElement.innerHTML = `
             <span class="status-indicator status-error"></span>
-            <span class="text-danger">API connection failed</span>
+            <span class="text-danger">Error de conexión</span>
         `;
         console.error('API status check failed:', error);
     }
@@ -61,26 +121,35 @@ async function checkAPIStatus() {
 async function handleChatSubmission(event) {
     event.preventDefault();
     
+    const messageInput = document.getElementById('chat-message');
     const submitButton = document.getElementById('chat-submit');
-    const responseContainer = document.getElementById('chat-response-container');
-    const responseContent = document.getElementById('chat-response-content');
-    const responseMeta = document.getElementById('chat-response-meta');
+    const messagesContainer = document.getElementById('chat-messages');
     
     // Get form data
-    const message = document.getElementById('chat-message').value.trim();
+    const message = messageInput.value.trim();
     const model = document.getElementById('chat-model').value;
     const mode = document.getElementById('chat-mode').value;
     const context = document.getElementById('chat-context').value.trim();
     
     if (!message) {
-        showAlert('Please enter a message', 'warning');
+        showAlert('Por favor escribe un mensaje', 'warning');
         return;
     }
     
+    // Clear input and hide welcome message
+    messageInput.value = '';
+    messageInput.style.height = 'auto';
+    hideWelcomeMessage();
+    
+    // Add user message to chat
+    addUserMessage(message);
+    
     // Show loading state
     submitButton.disabled = true;
-    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-    responseContainer.style.display = 'none';
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    
+    // Add loading message
+    const loadingId = addLoadingMessage();
     
     try {
         const requestData = {
@@ -103,60 +172,75 @@ async function handleChatSubmission(event) {
         
         const data = await response.json();
         
+        // Remove loading message
+        removeLoadingMessage(loadingId);
+        
         if (response.ok && data.success) {
-            // Display response
-            responseContent.innerHTML = `<div class="response-content">${escapeHtml(data.response)}</div>`;
-            
-            // Display metadata
-            let metaInfo = `Model: ${data.model} | Mode: ${data.mode}`;
-            if (data.metadata.perspectives_analyzed) {
-                metaInfo += ` | Perspectives: ${data.metadata.perspectives_analyzed}`;
-            }
-            if (data.usage.total_tokens) {
-                metaInfo += ` | Tokens: ${data.usage.total_tokens}`;
-            }
-            responseMeta.textContent = metaInfo;
-            
-            responseContainer.style.display = 'block';
-            responseContainer.scrollIntoView({ behavior: 'smooth' });
+            // Add AI response to chat
+            addAssistantMessage(data.response, {
+                model: data.model,
+                mode: data.mode,
+                perspectives: data.metadata?.perspectives_analyzed,
+                tokens: data.usage?.total_tokens
+            });
         } else {
-            throw new Error(data.message || 'Failed to get response');
+            throw new Error(data.message || 'Error al obtener respuesta');
         }
     } catch (error) {
+        // Remove loading message
+        removeLoadingMessage(loadingId);
         console.error('Chat error:', error);
         showAlert(`Error: ${error.message}`, 'danger');
+        addAssistantMessage('Lo siento, ha ocurrido un error al procesar tu mensaje. Por favor intenta de nuevo.', { error: true });
     } finally {
         // Reset button
         submitButton.disabled = false;
-        submitButton.innerHTML = '<i class="fas fa-paper-plane"></i> Send Message';
+        submitButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
+        messageInput.focus();
     }
 }
 
-async function handleUploadSubmission(event) {
-    event.preventDefault();
+async function handleFileSelection(event) {
+    const file = event.target.files[0];
+    if (!file) return;
     
-    const submitButton = document.getElementById('upload-submit');
-    const responseContainer = document.getElementById('upload-response-container');
-    const responseContent = document.getElementById('upload-response-content');
-    
-    const fileInput = document.getElementById('file-input');
-    const processWithAI = document.getElementById('process-with-ai').checked;
-    const model = document.getElementById('upload-model').value;
-    const question = document.getElementById('upload-question').value.trim();
-    
-    if (!fileInput.files[0]) {
-        showAlert('Please select a file', 'warning');
+    // Validate file size
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+        showAlert('El archivo excede el límite de 10MB', 'danger');
+        event.target.value = '';
         return;
     }
     
-    // Show loading state
-    submitButton.disabled = true;
-    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-    responseContainer.style.display = 'none';
+    // Validate file type
+    const allowedTypes = ['text/plain', 'application/pdf'];
+    if (!allowedTypes.includes(file.type)) {
+        showAlert('Solo se admiten archivos PDF y TXT', 'danger');
+        event.target.value = '';
+        return;
+    }
+    
+    // Process file upload
+    await processFileUpload(file);
+    event.target.value = '';
+}
+
+async function processFileUpload(file) {
+    const processWithAI = document.getElementById('process-with-ai').checked;
+    const model = document.getElementById('chat-model').value;
+    const question = document.getElementById('upload-question').value.trim();
+    
+    hideWelcomeMessage();
+    
+    // Add file upload message
+    addUserMessage(`📎 Archivo subido: ${file.name} (${formatFileSize(file.size)})`);
+    
+    // Show loading
+    const loadingId = addLoadingMessage('Procesando archivo...');
     
     try {
         const formData = new FormData();
-        formData.append('file', fileInput.files[0]);
+        formData.append('file', file);
         
         if (processWithAI) {
             formData.append('process_with_ai', 'true');
@@ -173,93 +257,162 @@ async function handleUploadSubmission(event) {
         
         const data = await response.json();
         
+        // Remove loading message
+        removeLoadingMessage(loadingId);
+        
         if (response.ok && data.success) {
-            // Display file info and results
-            let html = `
-                <div class="file-info mb-3">
-                    <h6><i class="fas fa-file"></i> File Information</h6>
-                    <ul class="list-unstyled mb-0">
-                        <li><strong>Name:</strong> ${escapeHtml(data.file_info.filename)}</li>
-                        <li><strong>Size:</strong> ${formatFileSize(data.file_info.size)}</li>
-                        <li><strong>Type:</strong> ${data.file_info.type.toUpperCase()}</li>
-                        <li><strong>Words:</strong> ${data.file_info.word_count.toLocaleString()}</li>
-                    </ul>
-                </div>
-            `;
+            let responseText = `✅ Archivo procesado exitosamente:\n\n`;
+            responseText += `📄 **${data.file_info.filename}**\n`;
+            responseText += `📊 Tamaño: ${formatFileSize(data.file_info.size)}\n`;
+            responseText += `📝 Palabras: ${data.file_info.word_count.toLocaleString()}\n\n`;
             
             if (data.content_preview) {
-                html += `
-                    <div class="mb-3">
-                        <h6><i class="fas fa-eye"></i> Content Preview</h6>
-                        <div class="response-content">${escapeHtml(data.content_preview)}</div>
-                    </div>
-                `;
+                responseText += `**Vista previa del contenido:**\n${data.content_preview}\n\n`;
             }
             
             if (data.ai_analysis) {
-                html += `
-                    <div class="mb-3">
-                        <h6><i class="fas fa-brain"></i> AI Analysis</h6>
-                        <div class="response-content">${escapeHtml(data.ai_analysis.response)}</div>
-                        <div class="mt-2">
-                            <small class="text-muted">
-                                Model: ${data.ai_analysis.model} | 
-                                Question: ${escapeHtml(data.ai_analysis.question)}
-                            </small>
-                        </div>
-                    </div>
-                `;
+                responseText += `**Análisis de IA (${data.ai_analysis.model}):**\n`;
+                responseText += `${data.ai_analysis.response}`;
             }
             
-            responseContent.innerHTML = html;
-            responseContainer.style.display = 'block';
-            responseContainer.scrollIntoView({ behavior: 'smooth' });
+            addAssistantMessage(responseText, { 
+                model: data.ai_analysis?.model,
+                file: true
+            });
         } else {
-            throw new Error(data.message || 'Failed to process file');
+            throw new Error(data.message || 'Error al procesar archivo');
         }
     } catch (error) {
+        // Remove loading message
+        removeLoadingMessage(loadingId);
         console.error('Upload error:', error);
         showAlert(`Error: ${error.message}`, 'danger');
-    } finally {
-        // Reset button
-        submitButton.disabled = false;
-        submitButton.innerHTML = '<i class="fas fa-upload"></i> Upload & Process';
+        addAssistantMessage('Error al procesar el archivo. Por favor intenta de nuevo.', { error: true });
     }
 }
 
-function handleFileSelection(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+function hideWelcomeMessage() {
+    const welcomeMessage = document.querySelector('.welcome-message');
+    if (welcomeMessage) {
+        welcomeMessage.style.display = 'none';
+    }
+}
+
+function addUserMessage(message) {
+    const messagesContainer = document.getElementById('chat-messages');
     
-    // Validate file size
-    const maxSize = 10 * 1024 * 1024; // 10MB
-    if (file.size > maxSize) {
-        showAlert('File size exceeds 10MB limit', 'danger');
-        event.target.value = '';
-        return;
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message user';
+    messageDiv.innerHTML = `
+        <div class="message-content">
+            ${escapeHtml(message).replace(/\n/g, '<br>')}
+        </div>
+        <div class="message-avatar">
+            <i class="fas fa-user"></i>
+        </div>
+    `;
+    
+    messagesContainer.appendChild(messageDiv);
+    scrollToBottom();
+}
+
+function addAssistantMessage(message, metadata = {}) {
+    const messagesContainer = document.getElementById('chat-messages');
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message assistant';
+    
+    let metaInfo = '';
+    if (metadata.model && !metadata.error) {
+        metaInfo = `Modelo: ${metadata.model}`;
+        if (metadata.mode) metaInfo += ` | Modo: ${metadata.mode}`;
+        if (metadata.perspectives) metaInfo += ` | Perspectivas: ${metadata.perspectives}`;
+        if (metadata.tokens) metaInfo += ` | Tokens: ${metadata.tokens}`;
+        if (metadata.file) metaInfo += ` | Procesamiento de archivo`;
     }
     
-    // Validate file type
-    const allowedTypes = ['text/plain', 'application/pdf'];
-    if (!allowedTypes.includes(file.type)) {
-        showAlert('Only PDF and TXT files are supported', 'danger');
-        event.target.value = '';
-        return;
+    messageDiv.innerHTML = `
+        <div class="message-avatar">
+            <i class="fas fa-robot"></i>
+        </div>
+        <div class="message-content">
+            ${formatMessage(message)}
+            ${metaInfo ? `<div class="message-meta">${metaInfo}</div>` : ''}
+        </div>
+    `;
+    
+    messagesContainer.appendChild(messageDiv);
+    scrollToBottom();
+}
+
+function addLoadingMessage(text = 'Pensando...') {
+    const messagesContainer = document.getElementById('chat-messages');
+    const loadingId = 'loading-' + Date.now();
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message assistant';
+    messageDiv.id = loadingId;
+    messageDiv.innerHTML = `
+        <div class="message-avatar">
+            <i class="fas fa-robot"></i>
+        </div>
+        <div class="message-content">
+            <div class="loading-message">
+                <span>${text}</span>
+                <div class="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    messagesContainer.appendChild(messageDiv);
+    scrollToBottom();
+    
+    return loadingId;
+}
+
+function removeLoadingMessage(loadingId) {
+    const loadingElement = document.getElementById(loadingId);
+    if (loadingElement) {
+        loadingElement.remove();
     }
+}
+
+function scrollToBottom() {
+    const chatContainer = document.getElementById('chat-container');
+    setTimeout(() => {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }, 100);
+}
+
+function formatMessage(text) {
+    // Simple markdown-like formatting
+    let formatted = escapeHtml(text);
+    
+    // Bold text **text**
+    formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    // Line breaks
+    formatted = formatted.replace(/\n/g, '<br>');
+    
+    return formatted;
 }
 
 function showAlert(message, type = 'info') {
     // Create alert element
     const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 2000; max-width: 400px;';
     alertDiv.innerHTML = `
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
     
-    // Insert at top of container
-    const container = document.querySelector('.container');
-    container.insertBefore(alertDiv, container.firstChild);
+    // Add to body
+    document.body.appendChild(alertDiv);
     
     // Auto-dismiss after 5 seconds
     setTimeout(() => {
@@ -283,24 +436,64 @@ function formatFileSize(bytes) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-// Additional utility functions for enhanced UX
+// Additional utility functions
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(function() {
-        showAlert('Copied to clipboard!', 'success');
+        showAlert('¡Copiado al portapapeles!', 'success');
     }).catch(function(err) {
         console.error('Copy failed:', err);
-        showAlert('Failed to copy to clipboard', 'danger');
+        showAlert('Error al copiar al portapapeles', 'danger');
     });
 }
 
 // Keyboard shortcuts
 document.addEventListener('keydown', function(event) {
-    // Ctrl/Cmd + Enter to submit chat form
-    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
-        const activeTab = document.querySelector('.tab-pane.active');
-        if (activeTab && activeTab.id === 'chat') {
-            const chatForm = document.getElementById('chat-form');
-            chatForm.dispatchEvent(new Event('submit'));
+    // Ctrl/Cmd + / to toggle sidebar
+    if ((event.ctrlKey || event.metaKey) && event.key === '/') {
+        event.preventDefault();
+        document.getElementById('sidebar-toggle').click();
+    }
+});
+
+// Handle file drag and drop
+document.addEventListener('DOMContentLoaded', function() {
+    const chatContainer = document.getElementById('chat-container');
+    
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        chatContainer.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+        chatContainer.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        chatContainer.addEventListener(eventName, unhighlight, false);
+    });
+    
+    function highlight(e) {
+        chatContainer.classList.add('dragover');
+    }
+    
+    function unhighlight(e) {
+        chatContainer.classList.remove('dragover');
+    }
+    
+    chatContainer.addEventListener('drop', handleDrop, false);
+    
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        
+        if (files.length > 0) {
+            const file = files[0];
+            document.getElementById('file-input').files = files;
+            handleFileSelection({ target: { files: files } });
         }
     }
 });
