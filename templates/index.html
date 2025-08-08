@@ -150,11 +150,12 @@
 
         /* Messages */
         .message-wrapper { display: flex; flex-direction: column; margin-bottom: 20px; max-width: 90%; }
-        .message-content { position: relative; padding: 12px 18px; border-radius: 18px; line-height: 1.6; }
+        .message-content { position: relative; padding: 12px 18px; border-radius: 18px; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word; }
         .user-message { align-self: flex-end; }
         .user-message .message-content { background-color: #e3f2fd; }
         .ai-message { align-self: flex-start; }
         .ai-message .message-content { background-color: #f1f8e9; }
+        .error-message .message-content { background-color: #ffebee; border-left: 4px solid #f44336; }
         .ai-message pre { background-color: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 8px; overflow-x: auto; }
         .copy-btn { position: absolute; top: 8px; right: 8px; background-color: #e0e0e0; border: none; border-radius: 4px; cursor: pointer; padding: 4px; opacity: 0.5; }
         .ai-message .message-content:hover .copy-btn { opacity: 1; }
@@ -670,9 +671,17 @@
                 return;
             }
 
-            conversationHistory.forEach(message => {
+            conversationHistory.forEach((message, index) => {
+                // Filtrar mensajes del sistema
+                if (message.role === 'system') return;
+
                 const messageWrapper = document.createElement('div');
                 messageWrapper.classList.add('message-wrapper', message.role === 'user' ? 'user-message' : 'ai-message');
+                
+                if (message.error) {
+                    messageWrapper.classList.add('error-message');
+                }
+
                 const messageContent = document.createElement('div');
                 messageContent.classList.add('message-content');
 
@@ -680,7 +689,16 @@
                 if (message.role === 'user' && message.fileName) {
                     contentHTML += `<p style="font-style: italic; color: #6c757d;">📎 Archivo: ${message.fileName}</p>`;
                 }
-                contentHTML += message.role === 'assistant' ? marked.parse(message.content) : message.content;
+                
+                // Procesar contenido sin truncar
+                if (message.role === 'assistant') {
+                    // Usar marked para parsear markdown, asegurándose de no truncar
+                    const fullContent = message.content || '';
+                    contentHTML += marked.parse(fullContent);
+                } else {
+                    contentHTML += escapeHtml(message.content || '');
+                }
+                
                 messageContent.innerHTML = contentHTML;
 
                 // Mejorar tablas para móvil
@@ -708,18 +726,52 @@
                         });
                     });
 
-                    messageContent.appendChild(createCopyButton(message.content));
+                    if (message.content && !message.error) {
+                        messageContent.appendChild(createCopyButton(message.content));
+                    }
                 }
 
                 messageWrapper.appendChild(messageContent);
+                
+                // Agregar información adicional si existe
+                if (message.model || message.mode) {
+                    const metaDiv = document.createElement('div');
+                    metaDiv.className = 'message-meta';
+                    metaDiv.style.fontSize = '0.8rem';
+                    metaDiv.style.color = '#6c757d';
+                    metaDiv.style.marginTop = '5px';
+                    
+                    let metaText = '';
+                    if (message.model) metaText += `Modelo: ${message.model}`;
+                    if (message.mode) metaText += ` | Modo: ${message.mode}`;
+                    
+                    metaDiv.textContent = metaText;
+                    messageWrapper.appendChild(metaDiv);
+                }
+                
                 const timestampDiv = document.createElement('div');
                 timestampDiv.className = 'timestamp';
                 timestampDiv.textContent = formatTimestamp(message.timestamp);
                 messageWrapper.appendChild(timestampDiv);
                 chatOutput.appendChild(messageWrapper);
             });
-            hljs.highlightAll();
-            chatOutput.scrollTop = chatOutput.scrollHeight;
+            
+            // Highlight code blocks
+            if (typeof hljs !== 'undefined') {
+                hljs.highlightAll();
+            }
+            
+            // Scroll to bottom
+            setTimeout(() => {
+                chatOutput.scrollTop = chatOutput.scrollHeight;
+            }, 100);
+        }
+
+        // Función auxiliar para escapar HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         function createCopyButton(textToCopy) { 
@@ -742,6 +794,11 @@
                 return;
             }
 
+            // Crear chat si no existe
+            if (!currentChatId) {
+                startNewChat();
+            }
+
             // Agregar mensaje del usuario al historial de conversación
             const userMessage = {
                 role: 'user',
@@ -760,17 +817,22 @@
             sendButton.textContent = 'Pensando...';
 
             try {
-                // Preparar el historial completo para enviar al backend
-                const messagesToSend = conversationHistory.map(msg => ({
-                    role: msg.role,
-                    content: msg.content
-                }));
+                // Filtrar solo mensajes de usuario y asistente para el historial
+                const messagesToSend = conversationHistory
+                    .filter(msg => msg.role === 'user' || msg.role === 'assistant')
+                    .map(msg => ({
+                        role: msg.role,
+                        content: msg.content
+                    }));
+
+                // Limitar historial a últimos 20 mensajes para evitar límites de tokens
+                const recentMessages = messagesToSend.slice(-20);
 
                 const requestData = {
                     message: prompt,
                     model: modelSelect.value,
                     mode: modeSelect.value,
-                    conversation_history: messagesToSend  // Incluir historial completo
+                    conversation_history: recentMessages
                 };
 
                 const context = contextInput.value.trim();
@@ -804,6 +866,15 @@
             } catch (error) {
                 console.error('Error:', error);
                 alert(`Error: ${error.message}`);
+                // Agregar mensaje de error al chat
+                const errorMessage = {
+                    role: 'assistant',
+                    content: `❌ Error: ${error.message}`,
+                    timestamp: new Date().toISOString(),
+                    error: true
+                };
+                conversationHistory.push(errorMessage);
+                renderConversation();
             } finally {
                 promptInput.disabled = false;
                 sendButton.disabled = false;
