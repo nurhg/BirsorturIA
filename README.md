@@ -1,71 +1,71 @@
-# Overview
+# Visión General
 
-This is a Flask-based chatbot API that provides AI chat capabilities using Groq's language models. The application serves as a REST API wrapper around Groq's API, offering both basic and pro chat modes, file processing capabilities for PDFs and text files, and a web interface for testing and documentation. The system supports multiple AI models including LLaMA, Mixtral, and Gemma variants, with features like context injection and file content analysis.
+Esta es una API de chatbot basada en Flask que proporciona capacidades de chat con inteligencia artificial utilizando los modelos de lenguaje de Groq. La aplicación funciona como un contenedor API REST alrededor de la API de Groq, ofreciendo modos de chat básico y pro, capacidades de procesamiento de archivos para PDFs y archivos de texto, y una interfaz web para pruebas y documentación. El sistema soporta múltiples modelos de IA, incluyendo variantes de LLaMA, Mixtral y Gemma, con características como inyección de contexto y análisis de contenido de archivos.
 
-# User Preferences
+# Preferencias del Usuario
 
-Preferred communication style: Simple, everyday language.
+Estilo de comunicación preferido: Lenguaje sencillo y cotidiano.
 
-# System Architecture
+# Arquitectura del Sistema
 
-## Backend Framework
-- **Flask**: Lightweight Python web framework chosen for rapid development and API-first design
-- **Blueprint Architecture**: Modular route organization with separate blueprints for chat and upload functionality
-- **CORS Enabled**: Cross-origin resource sharing configured for frontend integration
-- **ProxyFix Middleware**: Handles proxy headers for deployment behind reverse proxies
+## Framework Backend
+- **Flask**: Framework web ligero de Python elegido por su desarrollo rápido y diseño orientado a API
+- **Arquitectura con Blueprints**: Organización modular de rutas con blueprints separados para funcionalidades de chat y carga de archivos
+- **CORS Habilitado**: Configuración de intercambio de recursos entre orígenes para integración con frontends
+- **Middleware ProxyFix**: Manejo de cabeceras de proxy para despliegue detrás de proxies inversos
 
-## API Design
-- **RESTful Endpoints**: Clean API structure with `/chat` for conversations and `/upload` for file processing
-- **JSON Request/Response**: Standardized data exchange format
-- **Error Handling**: Centralized error handling with appropriate HTTP status codes
-- **Health Check**: `/health` endpoint for monitoring and deployment verification
+## Diseño de la API
+- **Endpoints RESTful**: Estructura limpia de API con `/chat` para conversaciones y `/upload` para procesamiento de archivos
+- **Solicitud/Respuesta en JSON**: Formato estandarizado de intercambio de datos
+- **Manejo de Errores**: Manejo centralizado de errores con códigos de estado HTTP apropiados
+- **Verificación de Salud**: Endpoint `/health` para monitoreo y verificación del despliegue
 
-## AI Integration
-- **Groq API Client**: Custom client wrapper for Groq's chat completion API
-- **Multi-Model Support**: Configurable model selection (LLaMA 3 8B/70B, Mixtral 8x7B, Gemma 7B)
-- **Dual Processing Modes**: Basic single-query mode and Pro mode with multiple synthesis queries
-- **Context Injection**: Support for additional context in chat requests
+## Integración con IA
+- **Cliente de la API de Groq**: Wrapper personalizado para la API de completado de chat de Groq
+- **Soporte Multi-Modelo**: Selección configurable de modelos (LLaMA 3 8B/70B, Mixtral 8x7B, Gemma 7B)
+- **Modos de Procesamiento Dual**: Modo básico de consulta única y modo Pro con múltiples consultas de síntesis
+- **Inyección de Contexto**: Soporte para contexto adicional en las solicitudes de chat
 
-## File Processing System
-- **Multi-Format Support**: PDF and TXT file processing capabilities
-- **Security Measures**: File size limits (10MB), extension validation, and secure filename handling
-- **Content Extraction**: PyPDF2 for PDF text extraction, direct text file reading
-- **AI Integration**: Optional AI processing of uploaded file content with question-answering
+## Sistema de Procesamiento de Archivos
+- **Soporte Multi-Formato**: Capacidad de procesar archivos PDF y TXT
+- **Medidas de Seguridad**: Límite de tamaño de archivo (10MB), validación de extensiones y manejo seguro de nombres de archivo
+- **Extracción de Contenido**: PyPDF2 para extracción de texto de PDFs, lectura directa de archivos de texto
+- **Integración con IA**: Procesamiento opcional con IA del contenido de archivos subidos, con capacidad de responder preguntas
 
-## Configuration Management
-- **Environment Variables**: API keys and sensitive data stored in environment variables
-- **Centralized Config**: Single configuration class managing all application settings
-- **Model Configuration**: Centralized mapping of user-friendly model names to API identifiers
+## Gestión de Configuración
+- **Variables de Entorno**: Claves API y datos sensibles almacenados en variables de entorno
+- **Configuración Centralizada**: Clase única que gestiona todos los ajustes de la aplicación
+- **Configuración de Modelos**: Mapeo centralizado de nombres de modelos amigables para el usuario a identificadores de API
 
-## Validation Layer
-- **Request Validation**: Comprehensive input validation for chat requests and file uploads
-- **Security Checks**: API key validation, file type restrictions, and content length limits
-- **Error Reporting**: Detailed validation error messages for debugging
+## Capa de Validación
+- **Validación de Solicitudes**: Validación exhaustiva de entradas para solicitudes de chat y carga de archivos
+- **Controles de Seguridad**: Validación de claves API, restricciones de tipo de archivo y límites de longitud de contenido
+- **Reporte de Errores**: Mensajes detallados de errores de validación para depuración
 
-## Frontend Interface
-- **Bootstrap UI**: Dark-themed responsive interface for API testing
-- **Tab Navigation**: Separate interfaces for chat and file upload functionality
-- **Real-time Status**: API health monitoring and request status feedback
-- **Interactive Forms**: User-friendly forms for testing API endpoints
+## Interfaz Frontend
+- **UI con Bootstrap**: Interfaz receptiva con tema oscuro para pruebas de la API
+- **Navegación con Pestañas**: Interfaces separadas para chat y carga de archivos
+- **Estado en Tiempo Real**: Monitoreo del estado de la API y retroalimentación del estado de las solicitudes
+- **Formularios Interactivos**: Formularios fáciles de usar para probar los endpoints de la API
 
-# External Dependencies
+# Dependencias Externas
 
-## Core AI Service
-- **Groq API**: Primary language model provider requiring API key authentication
-- **Models**: LLaMA 3 (8B/70B), Mixtral 8x7B, Gemma 7B variants
+## Servicio de IA Principal
+- **API de Groq**: Proveedor principal de modelos de lenguaje que requiere autenticación mediante clave API
+- **Modelos**: LLaMA 3 (8B/70B), Mixtral 8x7B, variantes de Gemma 7B
 
-## Python Libraries
-- **Flask**: Web framework and routing
-- **Flask-CORS**: Cross-origin request handling
-- **Requests**: HTTP client for external API communication
-- **PyPDF2**: PDF text extraction
-- **Werkzeug**: WSGI utilities and file handling
+## Librerías de Python
+- **Flask**: Framework web y sistema de enrutamiento
+- **Flask-CORS**: Manejo de solicitudes entre orígenes
+- **Requests**: Cliente HTTP para comunicación con APIs externas
+- **PyPDF2**: Extracción de texto de archivos PDF
+- **Werkzeug**: Utilidades WSGI y manejo de archivos
 
-## Frontend Dependencies
-- **Bootstrap 5**: UI framework with dark theme
-- **Font Awesome**: Icon library
-- **Vanilla JavaScript**: Client-side functionality without additional frameworks
+## Dependencias Frontend
+- **Bootstrap 5**: Framework de interfaz con tema oscuro
+- **Font Awesome**: Biblioteca de iconos
+- **Vanilla JavaScript**: Funcionalidad del lado del cliente sin frameworks adicionales
 
-## Development Tools
-- **Logging**: Python's built-in logging for debugging and monitoring
-- **Environment Configuration**: OS environment variable management
+## Herramientas de Desarrollo
+- **Logging**: Sistema de registro integrado de Python para depuración y monitoreo
+- **Configuración de Entorno**: Gestión de variables de entorno del sistema operativo
