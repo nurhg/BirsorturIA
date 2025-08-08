@@ -169,7 +169,7 @@ class GroqClient:
             basic_response["mode"] = "basic (fallback)"
             return basic_response
 
-    def vision_completion(self, message: str, image_url: str, model: str = "llava-v1.5-7b-4096-preview") -> Dict:
+    def vision_completion(self, message: str, image_url: str, model: str = "llama-3.2-11b-vision-preview") -> Dict:
         """
         Generate completion for image analysis using vision models.
 

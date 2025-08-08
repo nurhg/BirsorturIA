@@ -158,10 +158,11 @@ def vision_chat():
 
         # Get message and model
         message = request.form.get('message', 'Describe what you see in this image').strip()
-        model = request.form.get('model', 'llava-v1.5-7b-4096-preview')
+        model = request.form.get('model', 'llama-3.2-11b-vision-preview')
 
         # Validate model (ensure it's a vision model)
-        vision_models = ['llava-v1.5-7b-4096-preview']
+        from config import Config
+        vision_models = list(Config.VISION_MODELS.keys())
         if model not in vision_models:
             return jsonify({
                 "error": "Invalid vision model",

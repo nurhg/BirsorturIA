@@ -35,10 +35,10 @@ class Config:
 
     # Vision models for image analysis
     VISION_MODELS = {
-        'llava-v1.5-7b-4096-preview': {
-            'name': 'LLaVA 1.5 7B',
+        'llama-3.2-11b-vision-preview': {
+            'name': 'Llama 3.2 11B Vision',
             'description': 'Advanced vision-language model for image analysis',
-            'context_window': 4096
+            'context_window': 8192
         }
     }
 
