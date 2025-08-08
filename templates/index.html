@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot API - Groq Integration</title>
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="text-center">
+                    <h1 class="display-4 mb-2">
+                        <i class="fas fa-robot text-primary"></i>
+                        Chatbot API
+                    </h1>
+                    <p class="lead">Advanced AI Integration with Groq - Multiple Models & File Processing</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Status -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-heartbeat text-success"></i>
+                            API Status
+                        </h5>
+                        <div id="api-status" class="d-flex align-items-center">
+                            <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                            <span>Checking status...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <ul class="nav nav-tabs" id="mainTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="chat-tab" data-bs-toggle="tab" data-bs-target="#chat" type="button" role="tab">
+                            <i class="fas fa-comments"></i> Chat Interface
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload" type="button" role="tab">
+                            <i class="fas fa-upload"></i> File Upload
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="docs-tab" data-bs-toggle="tab" data-bs-target="#docs" type="button" role="tab">
+                            <i class="fas fa-book"></i> API Documentation
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="mainTabContent">
+            <!-- Chat Interface -->
+            <div class="tab-pane fade show active" id="chat" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-robot"></i>
+                                    Chat Interface
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="chat-form">
+                                    <div class="mb-3">
+                                        <label for="chat-message" class="form-label">Message</label>
+                                        <textarea class="form-control" id="chat-message" rows="3" placeholder="Enter your message here..." required></textarea>
+                                    </div>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="chat-model" class="form-label">AI Model</label>
+                                            <select class="form-select" id="chat-model">
+                                                <option value="llama3-8b">Llama 3 8B (Fast)</option>
+                                                <option value="llama3-70b">Llama 3 70B (Advanced)</option>
+                                                <option value="mixtral">Mixtral 8x7B</option>
+                                                <option value="gemma">Gemma 7B</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="chat-mode" class="form-label">Mode</label>
+                                            <select class="form-select" id="chat-mode">
+                                                <option value="basic">Basic Mode</option>
+                                                <option value="pro">Pro Mode (Enhanced)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="chat-context" class="form-label">Additional Context (Optional)</label>
+                                        <textarea class="form-control" id="chat-context" rows="2" placeholder="Provide additional context or background information..."></textarea>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-primary" id="chat-submit">
+                                        <i class="fas fa-paper-plane"></i>
+                                        Send Message
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-info-circle"></i>
+                                    Mode Information
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <strong>Basic Mode:</strong>
+                                    <p class="small mb-2">Single query response with standard processing.</p>
+                                </div>
+                                <div>
+                                    <strong>Pro Mode:</strong>
+                                    <p class="small">Enhanced processing with multiple perspectives and synthesis for comprehensive responses.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chat Response -->
+                <div class="row mt-4" id="chat-response-container" style="display: none;">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-reply"></i>
+                                    AI Response
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="chat-response-content"></div>
+                                <div class="mt-3">
+                                    <small class="text-muted" id="chat-response-meta"></small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- File Upload -->
+            <div class="tab-pane fade" id="upload" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-upload"></i>
+                                    File Upload & Processing
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="upload-form" enctype="multipart/form-data">
+                                    <div class="mb-3">
+                                        <label for="file-input" class="form-label">Select File</label>
+                                        <input type="file" class="form-control" id="file-input" accept=".txt,.pdf" required>
+                                        <div class="form-text">Supported formats: PDF, TXT (Max size: 10MB)</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="process-with-ai">
+                                            <label class="form-check-label" for="process-with-ai">
+                                                Process with AI
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div id="ai-options" style="display: none;">
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label for="upload-model" class="form-label">AI Model</label>
+                                                <select class="form-select" id="upload-model">
+                                                    <option value="llama3-8b">Llama 3 8B</option>
+                                                    <option value="llama3-70b">Llama 3 70B</option>
+                                                    <option value="mixtral">Mixtral 8x7B</option>
+                                                    <option value="gemma">Gemma 7B</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="upload-question" class="form-label">Specific Question (Optional)</label>
+                                            <textarea class="form-control" id="upload-question" rows="2" placeholder="Ask a specific question about the document..."></textarea>
+                                            <div class="form-text">Leave empty for general analysis</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-primary" id="upload-submit">
+                                        <i class="fas fa-upload"></i>
+                                        Upload & Process
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-file-alt"></i>
+                                    File Processing Info
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check text-success"></i> PDF text extraction</li>
+                                    <li><i class="fas fa-check text-success"></i> Plain text files</li>
+                                    <li><i class="fas fa-check text-success"></i> AI-powered analysis</li>
+                                    <li><i class="fas fa-check text-success"></i> Content summarization</li>
+                                    <li><i class="fas fa-check text-success"></i> Question answering</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Upload Response -->
+                <div class="row mt-4" id="upload-response-container" style="display: none;">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-file-check"></i>
+                                    Processing Results
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="upload-response-content"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Documentation -->
+            <div class="tab-pane fade" id="docs" role="tabpanel">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-book"></i>
+                                    API Documentation
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Chat Endpoint -->
+                                <div class="mb-4">
+                                    <h6><span class="badge bg-success">POST</span> /chat</h6>
+                                    <p>Send messages to the AI chatbot and receive responses.</p>
+                                    
+                                    <h6>Request Body:</h6>
+                                    <pre><code>{
+  "message": "Your message here",
+  "model": "llama3-8b", // optional
+  "mode": "basic", // basic or pro
+  "context": "Additional context" // optional
+}</code></pre>
+
+                                    <h6>Response:</h6>
+                                    <pre><code>{
+  "success": true,
+  "response": "AI response content",
+  "model": "llama3-8b",
+  "mode": "basic",
+  "usage": {...},
+  "metadata": {...}
+}</code></pre>
+                                </div>
+
+                                <hr>
+
+                                <!-- Upload Endpoint -->
+                                <div class="mb-4">
+                                    <h6><span class="badge bg-success">POST</span> /upload</h6>
+                                    <p>Upload files for processing and optional AI analysis.</p>
+                                    
+                                    <h6>Form Data:</h6>
+                                    <ul>
+                                        <li><code>file</code>: The uploaded file (PDF or TXT)</li>
+                                        <li><code>process_with_ai</code>: "true" to enable AI processing</li>
+                                        <li><code>model</code>: AI model to use (optional)</li>
+                                        <li><code>question</code>: Specific question about the file (optional)</li>
+                                    </ul>
+                                </div>
+
+                                <hr>
+
+                                <!-- Models Endpoint -->
+                                <div class="mb-4">
+                                    <h6><span class="badge bg-primary">GET</span> /models</h6>
+                                    <p>Get list of available AI models.</p>
+                                </div>
+
+                                <hr>
+
+                                <!-- Available Models -->
+                                <div class="mb-4">
+                                    <h6>Available AI Models:</h6>
+                                    <ul>
+                                        <li><strong>llama3-8b:</strong> Fast, efficient model for general tasks</li>
+                                        <li><strong>llama3-70b:</strong> Advanced model with superior reasoning</li>
+                                        <li><strong>mixtral:</strong> Mixture of experts model for complex tasks</li>
+                                        <li><strong>gemma:</strong> Google's efficient instruction-tuned model</li>
+                                    </ul>
+                                </div>
+
+                                <hr>
+
+                                <!-- Error Responses -->
+                                <div>
+                                    <h6>Error Response Format:</h6>
+                                    <pre><code>{
+  "error": "Error type",
+  "message": "Detailed error message"
+}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
