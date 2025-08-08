@@ -410,6 +410,9 @@
                     <option value="gpt-oss-20b">GPT-OSS 20B (Rápido)</option>
                     <option value="gpt-oss-120b">GPT-OSS 120B (Potente)</option>
                 </optgroup>
+                <optgroup label="Modelos de Visión">
+                    <option value="llava-v1.5-7b-4096-preview">LLaVA 1.5 7B (Imágenes)</option>
+                </optgroup>
             </select>
             <p class="description" id="model-description">Elige el motor de IA.</p>
         </div>
@@ -691,7 +694,8 @@
             'mixtral': 'Contexto largo, versátil y rápido.',
             'gemma': 'Eficiente y ligero.',
             'gpt-oss-20b': 'Modelo Open Source rápido.',
-            'gpt-oss-120b': 'Modelo Open Source potente, ideal para tareas complejas.'
+            'gpt-oss-120b': 'Modelo Open Source potente, ideal para tareas complejas.',
+            'llava-v1.5-7b-4096-preview': 'Especializado en análisis de imágenes y visión por computadora.'
         };
 
         modelSelect.addEventListener('change', () => {
@@ -950,12 +954,13 @@
         async function handleFileUpload() {
             if (!attachedFile) return;
 
+            const prompt = promptInput.value.trim();
             const userMessage = {
                 role: 'user',
-                content: promptInput.value.trim() || `Subiendo archivo: ${attachedFile.name}`,
+                content: prompt || `Analiza esta imagen: ${attachedFile.name}`,
                 fileName: attachedFile.name,
-                fileType: attachedFile.type, // Store file type
-                fileUrl: URL.createObjectURL(attachedFile), // Store URL for preview
+                fileType: attachedFile.type,
+                fileUrl: URL.createObjectURL(attachedFile),
                 timestamp: new Date().toISOString()
             };
 
@@ -967,54 +972,91 @@
             autoResizeTextarea();
             promptInput.disabled = true;
             sendButton.disabled = true;
-            sendButton.textContent = 'Procesando archivo...';
+            sendButton.textContent = 'Analizando imagen...';
 
             try {
-                const formData = new FormData();
-                formData.append('file', attachedFile);
-                formData.append('process_with_ai', 'true');
-                formData.append('model', modelSelect.value);
+                // Check if it's an image file
+                if (attachedFile.type.startsWith('image/')) {
+                    // Handle image with vision endpoint
+                    const formData = new FormData();
+                    formData.append('image', attachedFile);
+                    formData.append('message', prompt || 'Describe lo que ves en esta imagen de forma detallada');
+                    formData.append('model', 'llava-v1.5-7b-4096-preview'); // Use vision model
 
-                const question = promptInput.value.trim();
-                if (question) {
-                    formData.append('question', question);
-                }
+                    const response = await fetch(`${API_BASE_URL}/chat/vision`, {
+                        method: 'POST',
+                        body: formData
+                    });
 
-                const response = await fetch(`${API_BASE_URL}/upload`, {
-                    method: 'POST',
-                    body: formData
-                });
+                    const data = await response.json();
 
-                const data = await response.json();
+                    if (response.ok && data.success) {
+                        const aiMessage = {
+                            role: 'assistant',
+                            content: data.response,
+                            timestamp: new Date().toISOString(),
+                            model: data.model,
+                            mode: data.mode
+                        };
+                        conversationHistory.push(aiMessage);
+                        saveCurrentConversation();
+                        renderConversation();
+                    } else {
+                        throw new Error(data.message || 'Error al analizar imagen');
+                    }
+                } else {
+                    // Handle non-image files (PDF, TXT) with upload endpoint
+                    const formData = new FormData();
+                    formData.append('file', attachedFile);
+                    formData.append('process_with_ai', 'true');
+                    formData.append('model', modelSelect.value);
 
-                if (response.ok && data.success) {
-                    let responseText = `✅ Archivo procesado: **${data.file_info.filename}**\n\n`;
-                    responseText += `📊 Tamaño: ${formatFileSize(data.file_info.size)}\n`;
-                    responseText += `📝 Palabras: ${data.file_info.word_count.toLocaleString()}\n\n`;
-
-                    if (data.ai_analysis) {
-                        responseText += `**Análisis de IA:**\n${data.ai_analysis.response}`;
+                    if (prompt) {
+                        formData.append('question', prompt);
                     }
 
-                    const aiMessage = {
-                        role: 'assistant',
-                        content: responseText,
-                        timestamp: new Date().toISOString(),
-                        model: data.ai_analysis?.model || modelSelect.value
-                    };
-                    conversationHistory.push(aiMessage);
-                    saveCurrentConversation();
-                    renderConversation();
-                } else {
-                    throw new Error(data.message || 'Error al procesar archivo');
+                    const response = await fetch(`${API_BASE_URL}/upload`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok && data.success) {
+                        let responseText = `✅ Archivo procesado: **${data.file_info.filename}**\n\n`;
+                        responseText += `📊 Tamaño: ${formatFileSize(data.file_info.size)}\n`;
+                        responseText += `📝 Palabras: ${data.file_info.word_count.toLocaleString()}\n\n`;
+
+                        if (data.ai_analysis) {
+                            responseText += `**Análisis de IA:**\n${data.ai_analysis.response}`;
+                        }
+
+                        const aiMessage = {
+                            role: 'assistant',
+                            content: responseText,
+                            timestamp: new Date().toISOString(),
+                            model: data.ai_analysis?.model || modelSelect.value
+                        };
+                        conversationHistory.push(aiMessage);
+                        saveCurrentConversation();
+                        renderConversation();
+                    } else {
+                        throw new Error(data.message || 'Error al procesar archivo');
+                    }
                 }
 
             } catch (error) {
                 console.error('Error:', error);
-                alert(`Error: ${error.message}`);
+                const errorMessage = {
+                    role: 'assistant',
+                    content: `❌ Error al procesar archivo: ${error.message}`,
+                    timestamp: new Date().toISOString(),
+                    error: true
+                };
+                conversationHistory.push(errorMessage);
+                renderConversation();
             } finally {
-                // Revoke the object URL when done to free up memory
-                URL.revokeObjectURL(userMessage.fileUrl); 
+                // Don't revoke URL yet, keep it for display
                 attachedFile = null;
                 fileInput.value = '';
                 attachmentPreviewContainer.style.display = 'none';
@@ -1083,6 +1125,51 @@
 
         // Auto-focus en el input
         promptInput.focus();
+
+        // Handle paste events for images
+        document.addEventListener('paste', handlePaste);
+
+        function handlePaste(event) {
+            const items = event.clipboardData.items;
+            
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                
+                if (item.type.indexOf('image') !== -1) {
+                    event.preventDefault();
+                    
+                    const file = item.getAsFile();
+                    if (file) {
+                        // Simulate file selection
+                        attachedFile = file;
+                        attachmentFilename.textContent = `Imagen pegada - ${file.name || 'clipboard.png'}`;
+                        attachmentPreviewContainer.style.display = 'inline-block';
+
+                        // Show image preview
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            let imagePreview = document.getElementById('image-preview');
+                            if (!imagePreview) {
+                                imagePreview = document.createElement('img');
+                                imagePreview.id = 'image-preview';
+                                imagePreview.style.maxWidth = '200px';
+                                imagePreview.style.maxHeight = '200px';
+                                imagePreview.style.borderRadius = '6px';
+                                imagePreview.style.marginTop = '10px';
+                                imagePreview.style.display = 'block';
+                                attachmentPreviewContainer.appendChild(imagePreview);
+                            }
+                            imagePreview.src = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                        
+                        // Focus on input after paste
+                        promptInput.focus();
+                        break;
+                    }
+                }
+            }
+        }
     </script>
 </body>
 </html>
