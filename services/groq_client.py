@@ -80,9 +80,9 @@ class GroqClient:
         try:
             # Step 1: Generate multiple perspective queries
             perspectives = [
-                f"Analyze this comprehensively: {message}",
-                f"Provide detailed insights about: {message}",
-                f"What are the key aspects and implications of: {message}"
+                f"Analiza esto de manera integral: {message}",
+                f"Proporciona información detallada sobre: {message}",
+                f"¿Cuáles son los aspectos clave e implicaciones de: {message}?"
             ]
             
             responses = []
@@ -94,7 +94,7 @@ class GroqClient:
                         perspective, 
                         model=model, 
                         context=context,
-                        system_prompt="Provide a detailed, analytical response with specific examples and insights."
+                        system_prompt="Proporciona una respuesta detallada y analítica con ejemplos específicos e información útil. Responde siempre en español."
                     )
                     responses.append(response["content"])
                     logger.debug(f"Pro mode query {i+1} completed")
@@ -107,19 +107,19 @@ class GroqClient:
             
             # Step 3: Synthesize all responses
             synthesis_prompt = f"""
-            Based on the following multiple analytical responses to the question "{message}", 
-            create a comprehensive, well-structured final answer that synthesizes the best insights:
+            Basándote en las siguientes múltiples respuestas analíticas a la pregunta "{message}", 
+            crea una respuesta final integral y bien estructurada que sintetice las mejores ideas:
             
-            {chr(10).join([f"Response {i+1}: {resp}" for i, resp in enumerate(responses)])}
+            {chr(10).join([f"Respuesta {i+1}: {resp}" for i, resp in enumerate(responses)])}
             
-            Provide a detailed, authoritative response that combines the best elements from all perspectives.
+            Proporciona una respuesta detallada y autoritativa que combine los mejores elementos de todas las perspectivas.
             """
             
             final_response = self.chat_completion(
                 synthesis_prompt,
                 model=model,
                 context=context,
-                system_prompt="You are an expert synthesizer. Create comprehensive, well-structured responses."
+                system_prompt="Eres un experto sintetizador. Crea respuestas integrales y bien estructuradas. Responde siempre en español de manera clara y útil."
             )
             
             return {
