@@ -184,7 +184,15 @@ class GroqClient:
         try:
             logger.debug(f"Sending vision request to Groq with model: {model}")
 
-            # Prepare messages for vision model
+            # Extract base64 content from data URL
+            if image_url.startswith('data:'):
+                # Format: data:image/jpeg;base64,/9j/4AAQSkZJRgABA...
+                header, base64_data = image_url.split(',', 1)
+                image_content = base64_data
+            else:
+                image_content = image_url
+
+            # Prepare messages for vision model with correct Groq format
             messages = [
                 {
                     "role": "user",
@@ -196,7 +204,7 @@ class GroqClient:
                         {
                             "type": "image_url",
                             "image_url": {
-                                "url": image_url
+                                "url": f"data:image/jpeg;base64,{image_content}"
                             }
                         }
                     ]
@@ -227,4 +235,12 @@ class GroqClient:
 
         except Exception as e:
             logger.error(f"Vision completion failed: {e}")
-            raise
+            # Provide more detailed error information
+            if hasattr(e, 'response') and e.response:
+                try:
+                    error_data = e.response.json()
+                    logger.error(f"Groq API error details: {error_data}")
+                    raise Exception(f"Groq API error: {error_data.get('error', {}).get('message', str(e))}")
+                except:
+                    pass
+            raise Exception(f"Error procesando imagen: {str(e)}")

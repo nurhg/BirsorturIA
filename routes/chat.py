@@ -174,9 +174,22 @@ def vision_chat():
 
         # Determine image format for data URL
         content_type = image_file.content_type
-        image_url = f"data:{content_type};base64,{image_base64}"
+        
+        # Ensure proper image format for Groq
+        if content_type in ['image/jpeg', 'image/jpg']:
+            mime_type = 'image/jpeg'
+        elif content_type == 'image/png':
+            mime_type = 'image/png'
+        elif content_type == 'image/gif':
+            mime_type = 'image/gif'
+        elif content_type == 'image/webp':
+            mime_type = 'image/webp'
+        else:
+            mime_type = 'image/jpeg'  # Default fallback
+            
+        image_url = f"data:{mime_type};base64,{image_base64}"
 
-        logger.info(f"Processing vision request with model: {model}")
+        logger.info(f"Processing vision request with model: {model}, image type: {mime_type}")
 
         # Generate AI response with image
         groq_client = GroqClient()

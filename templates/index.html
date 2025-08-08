@@ -1002,7 +1002,13 @@
                         saveCurrentConversation();
                         renderConversation();
                     } else {
-                        throw new Error(data.message || 'Error al analizar imagen');
+                        let errorMessage = 'Error al analizar imagen';
+                        if (data.error && data.message) {
+                            errorMessage = `${data.error}: ${data.message}`;
+                        } else if (data.message) {
+                            errorMessage = data.message;
+                        }
+                        throw new Error(errorMessage);
                     }
                 } else {
                     // Handle non-image files (PDF, TXT) with upload endpoint
