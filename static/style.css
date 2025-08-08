@@ -43,6 +43,23 @@ body {
     padding: 1rem;
 }
 
+.sidebar .form-label {
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    color: var(--bs-body-color);
+}
+
+.sidebar hr {
+    border-color: var(--bs-border-color);
+    margin: 1.5rem 0;
+}
+
+.sidebar .form-text {
+    font-size: 0.75rem;
+    color: var(--bs-secondary);
+}
+
 .sidebar-overlay {
     position: fixed;
     top: 0;
@@ -337,12 +354,12 @@ body {
 
 @media (min-width: 1024px) {
     .sidebar {
-        transform: translateX(0);
+        transform: translateX(0) !important;
         position: relative;
     }
     
     .main-content {
-        margin-left: 320px;
+        margin-left: 320px !important;
     }
     
     .sidebar-overlay {
@@ -350,6 +367,10 @@ body {
     }
     
     #sidebar-toggle {
+        display: none;
+    }
+    
+    .sidebar-header #sidebar-close {
         display: none;
     }
 }

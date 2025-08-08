@@ -5,6 +5,16 @@ document.addEventListener('DOMContentLoaded', function() {
     checkAPIStatus();
     setupEventListeners();
     autoResizeTextarea();
+    
+    // Force sidebar open on desktop after everything loads
+    setTimeout(() => {
+        if (window.innerWidth >= 1024) {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            sidebar.classList.add('open');
+            mainContent.classList.add('sidebar-open');
+        }
+    }, 200);
 });
 
 function initializeInterface() {
@@ -51,13 +61,17 @@ function setupSidebarToggle() {
     
     // Auto-open sidebar on desktop
     if (window.innerWidth >= 1024) {
-        openSidebar();
+        setTimeout(() => {
+            openSidebar();
+        }, 100);
     }
     
     // Handle window resize
     window.addEventListener('resize', function() {
         if (window.innerWidth >= 1024) {
-            openSidebar();
+            setTimeout(() => {
+                openSidebar();
+            }, 100);
         } else {
             closeSidebar();
         }
