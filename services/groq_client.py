@@ -33,7 +33,8 @@ class GroqClient:
                        message: str, 
                        model: str = Config.DEFAULT_MODEL,
                        context: Optional[str] = None,
-                       system_prompt: Optional[str] = None) -> Dict:
+                       system_prompt: Optional[str] = None,
+                       conversation_history: Optional[List[Dict]] = None) -> Dict:
         """Get a chat completion from Groq."""
         
         # Validate model
@@ -51,7 +52,11 @@ class GroqClient:
         if context:
             messages.append({"role": "system", "content": f"Context information: {context}"})
         
-        messages.append({"role": "user", "content": message})
+        # Add conversation history if provided
+        if conversation_history:
+            messages.extend(conversation_history)
+        else:
+            messages.append({"role": "user", "content": message})
         
         payload = {
             "model": model_id,
@@ -74,7 +79,8 @@ class GroqClient:
     def pro_mode_completion(self, 
                            message: str, 
                            model: str = Config.DEFAULT_MODEL,
-                           context: Optional[str] = None) -> Dict:
+                           context: Optional[str] = None,
+                           conversation_history: Optional[List[Dict]] = None) -> Dict:
         """Generate enhanced response using multiple queries and synthesis."""
         
         try:
@@ -134,6 +140,11 @@ class GroqClient:
             logger.error(f"Pro mode completion failed: {e}")
             # Fallback to basic mode
             logger.info("Falling back to basic mode")
-            basic_response = self.chat_completion(message, model=model, context=context)
+            basic_response = self.chat_completion(
+                message, 
+                model=model, 
+                context=context, 
+                conversation_history=conversation_history
+            )
             basic_response["mode"] = "basic (fallback)"
             return basic_response

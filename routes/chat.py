@@ -42,20 +42,25 @@ def chat():
         # Initialize Groq client
         groq_client = GroqClient()
         
+        # Get conversation history if provided
+        conversation_history = data.get('conversation_history', [])
+        
         # Generate response based on mode
         if validated_data['mode'] == 'pro':
             logger.info(f"Processing pro mode request with model: {validated_data['model']}")
             response = groq_client.pro_mode_completion(
                 message=validated_data['message'],
                 model=validated_data['model'],
-                context=validated_data['context']
+                context=validated_data['context'],
+                conversation_history=conversation_history
             )
         else:
             logger.info(f"Processing basic mode request with model: {validated_data['model']}")
             response = groq_client.chat_completion(
                 message=validated_data['message'],
                 model=validated_data['model'],
-                context=validated_data['context']
+                context=validated_data['context'],
+                conversation_history=conversation_history
             )
         
         # Build response

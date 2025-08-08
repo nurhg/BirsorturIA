@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -303,7 +304,7 @@
     
     <script>
         // ======= CONFIGURACIÓN DEL BACKEND =======
-        const API_BASE_URL = 'https://c3e7a371-7ca5-4109-b0e9-cec20f574b22-00-10bw3d7bc7o4o.riker.replit.dev';
+        const API_BASE_URL = window.location.origin;
         
         // ======= ELEMENTOS DOM =======
         const promptInput = document.getElementById('prompt-input');
@@ -413,7 +414,7 @@
             renderConversation(); 
             updateSavedChatsList(); 
             promptInput.focus(); 
-            closeSidebar(); // Close sidebar after creating new chat
+            closeSidebar();
         }
 
         function saveCurrentConversation() { 
@@ -430,7 +431,7 @@
                 conversationHistory = JSON.parse(savedHistory); 
                 renderConversation(); 
                 updateSavedChatsList(); 
-                closeSidebar(); // Close sidebar after loading chat
+                closeSidebar();
             } 
         }
 
@@ -448,7 +449,7 @@
             const chats = []; 
             for (let i = 0; i < localStorage.length; i++) { 
                 const key = localStorage.key(i); 
-                if (key.startsWith('chat_')) { 
+                if (key && key.startsWith('chat_')) { 
                     chats.push(key); 
                 } 
             } 
@@ -569,7 +570,7 @@
                 return;
             }
             
-            // Agregar mensaje del usuario
+            // Agregar mensaje del usuario al historial de conversación
             const userMessage = {
                 role: 'user',
                 content: prompt,
@@ -587,10 +588,17 @@
             sendButton.textContent = 'Pensando...';
             
             try {
+                // Preparar el historial completo para enviar al backend
+                const messagesToSend = conversationHistory.map(msg => ({
+                    role: msg.role,
+                    content: msg.content
+                }));
+                
                 const requestData = {
                     message: prompt,
                     model: modelSelect.value,
-                    mode: modeSelect.value
+                    mode: modeSelect.value,
+                    conversation_history: messagesToSend  // Incluir historial completo
                 };
                 
                 const context = contextInput.value.trim();
