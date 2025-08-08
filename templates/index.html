@@ -441,7 +441,7 @@
                     <button id="remove-attachment-btn" class="remove-attachment-btn">×</button>
                 </div>
                 <div class="chat-input">
-                    <input type="file" id="file-input" accept="application/pdf,text/plain" style="display: none;">
+                    <input type="file" id="file-input" accept="application/pdf,text/plain,image/png,image/jpeg,image/gif" style="display: none;">
                     <button id="attachment-btn" class="attachment-btn" title="Adjuntar archivo">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/></svg>
                     </button>
@@ -527,9 +527,9 @@
                 return;
             }
 
-            const allowedTypes = ['application/pdf', 'text/plain'];
+            const allowedTypes = ['application/pdf', 'text/plain', 'image/png', 'image/jpeg', 'image/gif'];
             if (!allowedTypes.includes(file.type)) {
-                alert('Solo se admiten archivos PDF y TXT');
+                alert('Solo se admiten archivos PDF, TXT, PNG, JPG y GIF');
                 return;
             }
 
@@ -537,6 +537,38 @@
             attachmentFilename.textContent = file.name;
             attachmentPreviewContainer.style.display = 'inline-block';
         });
+
+        // Allow dropping files
+        const chatContainer = document.querySelector('.chat-container');
+        chatContainer.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            chatContainer.style.borderColor = '#1a73e8';
+        });
+        chatContainer.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            chatContainer.style.borderColor = '#ccc';
+        });
+        chatContainer.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            chatContainer.style.borderColor = '#ccc';
+            handleDrop(e);
+        });
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+
+            if (files.length > 0) {
+                const file = files[0];
+                // Simular selección de archivo
+                const event = new Event('change');
+                fileInput.files = files;
+                fileInput.dispatchEvent(event);
+            }
+        }
 
         // ======= VERIFICAR API =======
         async function checkAPIStatus() {
@@ -664,7 +696,7 @@
                 welcomeDiv.style.color = '#6c757d';
                 welcomeDiv.innerHTML = `
                     <h3>¡Bienvenido a BirsorturIA!</h3>
-                    <p>Puedes enviar mensajes, subir archivos PDF/TXT, y elegir entre diferentes modelos.</p>
+                    <p>Puedes enviar mensajes, subir archivos PDF/TXT/Imágenes, y elegir entre diferentes modelos.</p>
                     <p>Usa el botón ☰ para acceder a la configuración.</p>
                 `;
                 chatOutput.appendChild(welcomeDiv);
@@ -677,7 +709,7 @@
 
                 const messageWrapper = document.createElement('div');
                 messageWrapper.classList.add('message-wrapper', message.role === 'user' ? 'user-message' : 'ai-message');
-                
+
                 if (message.error) {
                     messageWrapper.classList.add('error-message');
                 }
@@ -690,6 +722,11 @@
                     contentHTML += `<p style="font-style: italic; color: #6c757d;">📎 Archivo: ${message.fileName}</p>`;
                 }
                 
+                // Handle image display for user messages
+                if (message.role === 'user' && message.fileType && message.fileType.startsWith('image/')) {
+                    contentHTML += `<img src="${message.fileUrl}" alt="Attached Image" style="max-width: 200px; max-height: 200px; border-radius: 6px; margin-top: 10px;">`;
+                }
+
                 // Procesar contenido sin truncar
                 if (message.role === 'assistant') {
                     // Usar marked para parsear markdown, asegurándose de no truncar
@@ -698,7 +735,7 @@
                 } else {
                     contentHTML += escapeHtml(message.content || '');
                 }
-                
+
                 messageContent.innerHTML = contentHTML;
 
                 // Mejorar tablas para móvil
@@ -732,7 +769,7 @@
                 }
 
                 messageWrapper.appendChild(messageContent);
-                
+
                 // Agregar información adicional si existe
                 if (message.model || message.mode) {
                     const metaDiv = document.createElement('div');
@@ -740,27 +777,27 @@
                     metaDiv.style.fontSize = '0.8rem';
                     metaDiv.style.color = '#6c757d';
                     metaDiv.style.marginTop = '5px';
-                    
+
                     let metaText = '';
                     if (message.model) metaText += `Modelo: ${message.model}`;
                     if (message.mode) metaText += ` | Modo: ${message.mode}`;
-                    
+
                     metaDiv.textContent = metaText;
                     messageWrapper.appendChild(metaDiv);
                 }
-                
+
                 const timestampDiv = document.createElement('div');
                 timestampDiv.className = 'timestamp';
                 timestampDiv.textContent = formatTimestamp(message.timestamp);
                 messageWrapper.appendChild(timestampDiv);
                 chatOutput.appendChild(messageWrapper);
             });
-            
+
             // Highlight code blocks
             if (typeof hljs !== 'undefined') {
                 hljs.highlightAll();
             }
-            
+
             // Scroll to bottom
             setTimeout(() => {
                 chatOutput.scrollTop = chatOutput.scrollHeight;
@@ -890,6 +927,8 @@
                 role: 'user',
                 content: promptInput.value.trim() || `Subiendo archivo: ${attachedFile.name}`,
                 fileName: attachedFile.name,
+                fileType: attachedFile.type, // Store file type
+                fileUrl: URL.createObjectURL(attachedFile), // Store URL for preview
                 timestamp: new Date().toISOString()
             };
 
@@ -947,6 +986,8 @@
                 console.error('Error:', error);
                 alert(`Error: ${error.message}`);
             } finally {
+                // Revoke the object URL when done to free up memory
+                URL.revokeObjectURL(userMessage.fileUrl); 
                 attachedFile = null;
                 fileInput.value = '';
                 attachmentPreviewContainer.style.display = 'none';
