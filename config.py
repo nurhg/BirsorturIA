@@ -10,7 +10,9 @@ class Config:
         "llama3-8b": "llama3-8b-8192",
         "llama3-70b": "llama3-70b-8192", 
         "mixtral": "mixtral-8x7b-32768",
-        "gemma": "gemma-7b-it"
+        "gemma": "gemma-7b-it",
+        "gpt-oss-20b": "openai/gpt-oss-20b",
+        "gpt-oss-120b": "openai/gpt-oss-120b"
     }
     
     # Default model
