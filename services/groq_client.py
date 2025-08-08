@@ -46,7 +46,12 @@ class GroqClient:
         if model not in Config.AVAILABLE_MODELS:
             raise ValueError(f"Invalid model. Available models: {list(Config.AVAILABLE_MODELS.keys())}")
 
-        model_id = Config.AVAILABLE_MODELS[model]
+        # Extract model ID properly
+        model_info = Config.AVAILABLE_MODELS[model]
+        if isinstance(model_info, dict):
+            model_id = model_info['id']
+        else:
+            model_id = model_info
 
         # Build messages
         messages = []
@@ -198,68 +203,26 @@ class GroqClient:
                 }
             ]
 
-            # Make API call
-            # This part assumes you have a Groq client initialized with your API key
-            # For demonstration purposes, we'll simulate the response structure.
-            # In a real implementation, you would use `self.client.chat.completions.create(...)`
-            
-            # Simulate response
-            # In a real scenario, this would be a call to the Groq API
-            # For example:
-            # from groq import Groq
-            # client = Groq(api_key=self.api_key)
-            # completion = client.chat.completions.create(
-            #     model=model,
-            #     messages=messages,
-            #     temperature=0.7,
-            #     max_tokens=2048,
-            #     top_p=0.9,
-            #     stream=False
-            # )
-
-            # Mock response structure for demonstration
-            class MockChoice:
-                def __init__(self, content, finish_reason):
-                    self.message = MockMessage(content)
-                    self.finish_reason = finish_reason
-
-            class MockMessage:
-                def __init__(self, content):
-                    self.content = content
-
-            class MockUsage:
-                def __init__(self, prompt_tokens, completion_tokens, total_tokens):
-                    self.prompt_tokens = prompt_tokens
-                    self.completion_tokens = completion_tokens
-                    self.total_tokens = total_tokens
-
-            # Simulate a response from the vision model
-            mock_content = "This is a simulated response from the vision model. The image appears to be a landscape."
-            mock_finish_reason = "stop"
-            mock_prompt_tokens = 50
-            mock_completion_tokens = 25
-            mock_total_tokens = 75
-
-            completion = MockChoice(mock_content, mock_finish_reason)
-            usage = MockUsage(mock_prompt_tokens, mock_completion_tokens, mock_total_tokens)
-
-
-            # Extract response
-            response_content = completion.message.content
-
-            result = {
-                "content": response_content,
+            payload = {
                 "model": model,
-                "mode": "vision",
-                "finish_reason": completion.finish_reason,
-                "usage": {
-                    "prompt_tokens": usage.prompt_tokens,
-                    "completion_tokens": usage.completion_tokens,
-                    "total_tokens": usage.total_tokens
-                }
+                "messages": messages,
+                "temperature": 0.7,
+                "max_tokens": 2048,
+                "stream": False
             }
 
-            logger.debug(f"Vision completion successful. Tokens used: {result['usage']['total_tokens']}")
+            logger.debug(f"Making vision API request to Groq")
+            response = self._make_request(payload)
+
+            result = {
+                "content": response["choices"][0]["message"]["content"],
+                "model": model,
+                "mode": "vision",
+                "finish_reason": response["choices"][0].get("finish_reason"),
+                "usage": response.get("usage", {})
+            }
+
+            logger.debug(f"Vision completion successful. Tokens used: {result['usage'].get('total_tokens', 0)}")
             return result
 
         except Exception as e:

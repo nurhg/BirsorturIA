@@ -515,9 +515,14 @@
             attachedFile = null;
             fileInput.value = '';
             attachmentPreviewContainer.style.display = 'none';
+            // Remove image preview if it exists
+            const imagePreview = document.getElementById('image-preview');
+            if (imagePreview) {
+                imagePreview.remove();
+            }
         });
 
-        fileInput.addEventListener('change', (event) => {
+        function handleFileSelection(event) {
             const file = event.target.files[0];
             if (!file) return;
 
@@ -527,16 +532,38 @@
                 return;
             }
 
-            const allowedTypes = ['application/pdf', 'text/plain', 'image/png', 'image/jpeg', 'image/gif'];
+            const allowedTypes = ['application/pdf', 'text/plain', 'image/png', 'image/jpeg', 'image/gif', 'image/webp'];
             if (!allowedTypes.includes(file.type)) {
-                alert('Solo se admiten archivos PDF, TXT, PNG, JPG y GIF');
+                alert('Solo se admiten archivos PDF, TXT, PNG, JPG, GIF y WebP');
                 return;
             }
 
             attachedFile = file;
             attachmentFilename.textContent = file.name;
             attachmentPreviewContainer.style.display = 'inline-block';
-        });
+
+            // Show image preview if it's an image file
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    let imagePreview = document.getElementById('image-preview');
+                    if (!imagePreview) {
+                        imagePreview = document.createElement('img');
+                        imagePreview.id = 'image-preview';
+                        imagePreview.style.maxWidth = '200px';
+                        imagePreview.style.maxHeight = '200px';
+                        imagePreview.style.borderRadius = '6px';
+                        imagePreview.style.marginTop = '10px';
+                        imagePreview.style.display = 'block';
+                        attachmentPreviewContainer.appendChild(imagePreview);
+                    }
+                    imagePreview.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        fileInput.addEventListener('change', handleFileSelection);
+
 
         // Allow dropping files
         const chatContainer = document.querySelector('.chat-container');
@@ -721,7 +748,7 @@
                 if (message.role === 'user' && message.fileName) {
                     contentHTML += `<p style="font-style: italic; color: #6c757d;">📎 Archivo: ${message.fileName}</p>`;
                 }
-                
+
                 // Handle image display for user messages
                 if (message.role === 'user' && message.fileType && message.fileType.startsWith('image/')) {
                     contentHTML += `<img src="${message.fileUrl}" alt="Attached Image" style="max-width: 200px; max-height: 200px; border-radius: 6px; margin-top: 10px;">`;
@@ -825,18 +852,18 @@
             const prompt = promptInput.value.trim();
             if (prompt === '' && !attachedFile) return;
 
-            // Manejar archivo primero si existe
+            // Handle file upload if a file is attached
             if (attachedFile) {
                 await handleFileUpload();
-                return;
+                return; // Exit after handling file, let the next turn handle prompt
             }
 
-            // Crear chat si no existe
+            // Create chat if it doesn't exist
             if (!currentChatId) {
                 startNewChat();
             }
 
-            // Agregar mensaje del usuario al historial de conversación
+            // Add user message to conversation history
             const userMessage = {
                 role: 'user',
                 content: prompt,
@@ -854,7 +881,7 @@
             sendButton.textContent = 'Pensando...';
 
             try {
-                // Filtrar solo mensajes de usuario y asistente para el historial
+                // Filter only user and assistant messages for the history
                 const messagesToSend = conversationHistory
                     .filter(msg => msg.role === 'user' || msg.role === 'assistant')
                     .map(msg => ({
@@ -862,7 +889,7 @@
                         content: msg.content
                     }));
 
-                // Limitar historial a últimos 20 mensajes para evitar límites de tokens
+                // Limit history to the last 20 messages to avoid token limits
                 const recentMessages = messagesToSend.slice(-20);
 
                 const requestData = {
@@ -903,7 +930,7 @@
             } catch (error) {
                 console.error('Error:', error);
                 alert(`Error: ${error.message}`);
-                // Agregar mensaje de error al chat
+                // Add error message to the chat
                 const errorMessage = {
                     role: 'assistant',
                     content: `❌ Error: ${error.message}`,
@@ -991,6 +1018,11 @@
                 attachedFile = null;
                 fileInput.value = '';
                 attachmentPreviewContainer.style.display = 'none';
+                // Remove image preview if it exists
+                const imagePreview = document.getElementById('image-preview');
+                if (imagePreview) {
+                    imagePreview.remove();
+                }
                 promptInput.disabled = false;
                 sendButton.disabled = false;
                 sendButton.textContent = 'Enviar';
@@ -1013,7 +1045,7 @@
                 const textToCopy = copyBtn.dataset.text; 
                 navigator.clipboard.writeText(textToCopy).then(() => {
                     copyBtn.classList.add('copied'); 
-                    copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>`; 
+                    copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M9 16.17L4.83 12 3.42 13.41 9 19 21 7l-1.41-1.41L9 16.17z"/></svg>`; 
                     setTimeout(() => { 
                         copyBtn.classList.remove('copied'); 
                         copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>`; 
