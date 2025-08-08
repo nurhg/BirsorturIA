@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Pro Mode Chat - Replit Backend</title>
+    <title>BirsorturIA</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
@@ -282,7 +281,7 @@
         <div class="chat-container">
             <div class="chat-header">
                 <button class="settings-button" id="settings-button">☰</button>
-                <h1 class="chat-title-text">Chat IA - Replit Backend</h1>
+                <h1 class="chat-title-text">BirsorturIA</h1>
             </div>
             <div class="chat-output" id="chat-output"></div>
             <div class="chat-input-area">
@@ -304,7 +303,7 @@
     
     <script>
         // ======= CONFIGURACIÓN DEL BACKEND =======
-        const API_BASE_URL = window.location.origin;
+        const API_BASE_URL = 'https://c3e7a371-7ca5-4109-b0e9-cec20f574b22-00-10bw3d7bc7o4o.riker.replit.dev';
         
         // ======= ELEMENTOS DOM =======
         const promptInput = document.getElementById('prompt-input');
@@ -513,8 +512,7 @@
                 welcomeDiv.style.padding = '50px 20px';
                 welcomeDiv.style.color = '#6c757d';
                 welcomeDiv.innerHTML = `
-                    <h3>¡Bienvenido al Chat IA!</h3>
-                    <p>Conectado con tu backend de Replit</p>
+                    <h3>¡Bienvenido a BirsorturIA!</h3>
                     <p>Puedes enviar mensajes, subir archivos PDF/TXT, y elegir entre diferentes modelos.</p>
                     <p>Usa el botón ☰ para acceder a la configuración.</p>
                 `;
