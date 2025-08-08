@@ -158,7 +158,7 @@ def vision_chat():
 
         # Get message and model
         message = request.form.get('message', 'Describe what you see in this image').strip()
-        model = request.form.get('model', 'llama-3.2-11b-vision-preview')
+        model = request.form.get('model', 'meta-llama/llama-4-scout-17b-16e-instruct')
 
         # Validate model (ensure it's a vision model)
         from config import Config

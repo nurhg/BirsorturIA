@@ -1,5 +1,6 @@
 import os
 
+
 class Config:
     # Groq API configuration
     GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
@@ -35,8 +36,8 @@ class Config:
 
     # Vision models for image analysis
     VISION_MODELS = {
-        'llama-3.2-11b-vision-preview': {
-            'name': 'Llama 3.2 11B Vision',
+        'meta-llama/llama-4-scout-17b-16e-instruct': {
+            'name': 'Meta llama 4',
             'description': 'Advanced vision-language model for image analysis',
             'context_window': 8192
         }

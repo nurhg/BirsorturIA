@@ -411,7 +411,7 @@
                     <option value="gpt-oss-120b">GPT-OSS 120B (Potente)</option>
                 </optgroup>
                 <optgroup label="Modelos de Visión">
-                    <option value="llava-v1.5-7b-4096-preview">LLaVA 1.5 7B (Imágenes)</option>
+                    <option value="meta-llama/llama-4-scout-17b-16e-instruct">Meta llama4 (Imágenes)</option>
                 </optgroup>
             </select>
             <p class="description" id="model-description">Elige el motor de IA.</p>
@@ -695,7 +695,7 @@
             'gemma': 'Eficiente y ligero.',
             'gpt-oss-20b': 'Modelo Open Source rápido.',
             'gpt-oss-120b': 'Modelo Open Source potente, ideal para tareas complejas.',
-            'llava-v1.5-7b-4096-preview': 'Especializado en análisis de imágenes y visión por computadora.'
+            'meta-llama/llama-4-scout-17b-16e-instruct': 'Especializado en análisis de imágenes y visión por computadora.'
         };
 
         modelSelect.addEventListener('change', () => {
@@ -729,6 +729,7 @@
                     <h3>¡Bienvenido a BirsorturIA!</h3>
                     <p>Puedes enviar mensajes, subir archivos PDF/TXT/Imágenes, y elegir entre diferentes modelos.</p>
                     <p>Usa el botón ☰ para acceder a la configuración.</p>
+                    <p>Para analizar imagenes selecciona el modelo Meta Llama 4</p>
                 `;
                 chatOutput.appendChild(welcomeDiv);
                 return;
@@ -981,7 +982,7 @@
                     const formData = new FormData();
                     formData.append('image', attachedFile);
                     formData.append('message', prompt || 'Describe lo que ves en esta imagen de forma detallada');
-                    formData.append('model', 'llava-v1.5-7b-4096-preview'); // Use vision model
+                    formData.append('model', 'meta-llama/llama-4-scout-17b-16e-instruct'); // Use vision model
 
                     const response = await fetch(`${API_BASE_URL}/chat/vision`, {
                         method: 'POST',
