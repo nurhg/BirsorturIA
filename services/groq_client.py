@@ -55,8 +55,9 @@ class GroqClient:
         # Add conversation history if provided
         if conversation_history:
             messages.extend(conversation_history)
-        else:
-            messages.append({"role": "user", "content": message})
+        
+        # Always add the current message
+        messages.append({"role": "user", "content": message})
         
         payload = {
             "model": model_id,
@@ -84,11 +85,20 @@ class GroqClient:
         """Generate enhanced response using multiple queries and synthesis."""
         
         try:
-            # Step 1: Generate multiple perspective queries
+            # Construir contexto conversacional si existe historial
+            conversation_context = ""
+            if conversation_history and len(conversation_history) > 0:
+                conversation_context = "\n\nContexto de la conversación anterior:\n"
+                for msg in conversation_history[-4:]:  # Solo últimos 4 mensajes para no saturar
+                    role_text = "Usuario" if msg["role"] == "user" else "Asistente"
+                    conversation_context += f"{role_text}: {msg['content'][:200]}...\n"
+                conversation_context += "\nTen en cuenta este contexto para responder de manera coherente.\n"
+            
+            # Step 1: Generate multiple perspective queries with context
             perspectives = [
-                f"Analiza esto de manera integral: {message}",
-                f"Proporciona información detallada sobre: {message}",
-                f"¿Cuáles son los aspectos clave e implicaciones de: {message}?"
+                f"{conversation_context}Analiza esto de manera integral considerando el contexto previo: {message}",
+                f"{conversation_context}Proporciona información detallada sobre: {message}",
+                f"{conversation_context}¿Cuáles son los aspectos clave e implicaciones de: {message}?"
             ]
             
             responses = []

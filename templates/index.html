@@ -11,7 +11,7 @@
         :root { --sidebar-width: 280px; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
         .app-wrapper { display: flex; width: 100%; height: 100vh; }
-        
+
         /* Sidebar Styles */
         .sidebar { 
             position: fixed; 
@@ -31,7 +31,7 @@
             overflow-y: auto;
         }
         .sidebar.open { left: 0; }
-        
+
         /* Sidebar Header with Close Button */
         .sidebar-header {
             display: flex;
@@ -57,7 +57,7 @@
             background-color: #e9ecef;
             color: #495057;
         }
-        
+
         /* Overlay for mobile */
         .sidebar-overlay {
             position: fixed;
@@ -72,7 +72,7 @@
         .sidebar-overlay.active {
             display: block;
         }
-        
+
         .sidebar h2 { margin-top: 0; font-size: 1.2rem; }
         .sidebar button.new-chat { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; background-color: #1a73e8; color: white; cursor: pointer; margin-bottom: 10px; font-size: 1rem; }
         .sidebar-divider { border-top: 1px solid #dee2e6; margin: 20px 0; }
@@ -88,7 +88,7 @@
         .form-group select, .form-group input, .form-group textarea { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc; box-sizing: border-box; }
         #temp-value { font-weight: bold; color: #1a73e8; }
         .description { font-size: 0.85rem; color: #6c757d; margin-top: 8px; }
-        
+
         /* Main Content */
         .main-content { 
             width: 100%; 
@@ -109,7 +109,7 @@
             flex-direction: column; 
             overflow: hidden; 
         }
-        
+
         /* Chat Header */
         .chat-header { 
             padding: 10px 20px; 
@@ -135,7 +135,7 @@
             font-weight: bold;
             margin: 0;
         }
-        
+
         .chat-output { flex-grow: 1; padding: 20px; overflow-y: auto; }
         .chat-input-area { padding: 15px; border-top: 1px solid #e0e0e0; }
         .attachment-preview-container { margin-bottom: 10px; text-align: left; position: relative; display: inline-block; background-color: #e9ecef; padding: 5px 10px; border-radius: 6px; }
@@ -147,7 +147,7 @@
         .attachment-btn { background: none; border: none; cursor: pointer; padding: 8px; color: #6c757d; display: flex; align-items: center; justify-content: center; border-radius: 4px; }
         .attachment-btn:hover { background-color: #f8f9fa; }
         .attachment-btn svg { width: 20px; height: 20px; }
-        
+
         /* Messages */
         .message-wrapper { display: flex; flex-direction: column; margin-bottom: 20px; max-width: 90%; }
         .message-content { position: relative; padding: 12px 18px; border-radius: 18px; line-height: 1.6; }
@@ -163,13 +163,13 @@
         .timestamp { font-size: 0.75rem; color: #999; margin-top: 5px; }
         .user-message .timestamp { text-align: right; }
         .ai-message .timestamp { text-align: left; }
-        
+
         /* API Status */
         .api-status { padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 0.9rem; }
         .api-status.connected { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .api-status.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        
-        /* Table Responsive Styles */
+
+        /* Table Styles (General) */
         .ai-message table {
             width: 100%;
             border-collapse: collapse;
@@ -180,7 +180,7 @@
             overflow: hidden;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-        
+
         .ai-message th, .ai-message td {
             padding: 12px 8px;
             text-align: left;
@@ -188,157 +188,184 @@
             word-wrap: break-word;
             vertical-align: top;
         }
-        
+
         .ai-message th {
             background-color: #f8f9fa;
             font-weight: 600;
             color: #495057;
         }
-        
+
         .ai-message tr:last-child td {
             border-bottom: none;
         }
-        
+
         .ai-message tr:hover {
             background-color: #f8f9fa;
         }
 
         /* Mobile Responsive Styles */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 300px; /* Slightly wider on mobile */
-            }
-            
-            .chat-container {
-                width: 95%;
-                height: 95vh;
-                border-radius: 0;
-            }
-            
-            .chat-header {
-                padding: 12px 15px;
-            }
-            
-            .chat-input {
-                flex-wrap: wrap;
-                gap: 8px;
-            }
-            
-            .chat-input textarea {
-                font-size: 16px; /* Prevents zoom on iOS */
-            }
-            
-            .message-content {
-                max-width: 100%;
-                font-size: 0.9rem;
-            }
-            
-            .form-group select,
-            .form-group input,
-            .form-group textarea {
-                font-size: 16px; /* Prevents zoom on iOS */
-            }
-            
-            /* Mobile Table Styles */
-            .ai-message table {
-                font-size: 0.8rem;
-                margin: 10px 0;
-            }
-            
-            .ai-message th, .ai-message td {
-                padding: 8px 4px;
-                font-size: 0.8rem;
-                line-height: 1.3;
-            }
-            
-            .ai-message th {
-                font-size: 0.75rem;
-                font-weight: 700;
-            }
-            
-            /* Stack table on very small screens */
-            @media (max-width: 480px) {
-                .ai-message table, .ai-message thead, .ai-message tbody, .ai-message th, .ai-message td, .ai-message tr {
+            @media (max-width: 768px) {
+                .sidebar {
+                    width: 300px; /* Slightly wider on mobile */
+                }
+
+                .chat-container {
+                    width: 95%;
+                    height: 95vh;
+                    border-radius: 0;
+                }
+
+                .chat-header {
+                    padding: 12px 15px;
+                }
+
+                .chat-input {
+                    flex-wrap: wrap;
+                    gap: 8px;
+                }
+
+                .chat-input textarea {
+                    font-size: 16px; /* Prevents zoom on iOS */
+                }
+
+                .message-content {
+                    max-width: 100%;
+                    font-size: 0.9rem;
+                }
+
+                .form-group select,
+                .form-group input,
+                .form-group textarea {
+                    font-size: 16px; /* Prevents zoom on iOS */
+                }
+
+                /* Mobile Table Styles - Completamente rediseñadas */
+                .ai-message table {
+                    display: block;
+                    width: 100%;
+                    overflow-x: auto;
+                    white-space: nowrap;
+                    margin: 15px 0;
+                    border: none;
+                    box-shadow: none;
+                }
+
+                .ai-message thead {
+                    display: none;
+                }
+
+                .ai-message tbody {
                     display: block;
                 }
-                
-                .ai-message thead tr {
-                    position: absolute;
-                    top: -9999px;
-                    left: -9999px;
-                }
-                
+
                 .ai-message tr {
-                    border: 1px solid #ccc;
-                    margin-bottom: 10px;
-                    padding: 10px;
+                    display: block;
+                    border: 1px solid #e0e0e0;
                     border-radius: 8px;
+                    margin-bottom: 15px;
+                    padding: 15px;
                     background-color: white;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                 }
-                
+
                 .ai-message td {
+                    display: block;
                     border: none;
-                    border-bottom: 1px solid #eee;
+                    border-bottom: 1px solid #f0f0f0;
+                    padding: 8px 0;
                     position: relative;
-                    padding-left: 50% !important;
                     text-align: left;
                     white-space: normal;
+                    word-wrap: break-word;
+                    overflow-wrap: break-word;
                 }
-                
-                .ai-message td:before {
-                    content: attr(data-label) ": ";
-                    position: absolute;
-                    left: 6px;
-                    width: 45%;
-                    padding-right: 10px;
-                    white-space: nowrap;
-                    font-weight: 600;
-                    color: #495057;
-                }
-                
+
                 .ai-message td:last-child {
                     border-bottom: none;
                 }
+
+                .ai-message td:before {
+                    content: attr(data-label);
+                    display: block;
+                    font-weight: 700;
+                    color: #495057;
+                    font-size: 0.85rem;
+                    margin-bottom: 5px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+
+                .ai-message td:after {
+                    content: "";
+                    display: block;
+                    clear: both;
+                }
+
+                /* Estilos específicos para diferentes tipos de contenido en tablas */
+                .ai-message td strong {
+                    color: #2c3e50;
+                }
+
+                .ai-message td em {
+                    color: #7f8c8d;
+                    font-style: italic;
+                }
+
+                /* Better text wrapping for mobile */
+                .message-content p, .message-content li {
+                    word-wrap: break-word;
+                    overflow-wrap: break-word;
+                    hyphens: auto;
+                }
+
+                /* Improve readability */
+                .message-content {
+                    line-height: 1.5;
+                }
+
+                .message-content h1, .message-content h2, .message-content h3 {
+                    font-size: 1.1rem;
+                    margin: 15px 0 10px 0;
+                    line-height: 1.3;
+                }
+
+                .message-content ul, .message-content ol {
+                    padding-left: 20px;
+                    margin: 10px 0;
+                }
+
+                .message-content li {
+                    margin-bottom: 5px;
+                }
+
+                /* Estilos adicionales para mejorar la legibilidad en móvil */
+                .message-content blockquote {
+                    border-left: 4px solid #e74c3c;
+                    padding-left: 15px;
+                    margin: 15px 0;
+                    font-style: italic;
+                    color: #7f8c8d;
+                }
+
+                .message-content code {
+                    background-color: #f8f9fa;
+                    padding: 2px 6px;
+                    border-radius: 4px;
+                    font-family: 'Courier New', monospace;
+                    font-size: 0.85rem;
+                }
             }
-            
-            /* Better text wrapping for mobile */
-            .message-content p, .message-content li {
-                word-wrap: break-word;
-                overflow-wrap: break-word;
-                hyphens: auto;
-            }
-            
-            /* Improve readability */
-            .message-content {
-                line-height: 1.5;
-            }
-            
-            .message-content h1, .message-content h2, .message-content h3 {
-                font-size: 1.1rem;
-                margin: 15px 0 10px 0;
-                line-height: 1.3;
-            }
-            
-            .message-content ul, .message-content ol {
-                padding-left: 20px;
-                margin: 10px 0;
-            }
-            
-            .message-content li {
-                margin-bottom: 5px;
-            }
-        }
-        
+
         /* Desktop Styles */
         @media (min-width: 1024px) {
             .main-content.sidebar-open { 
                 margin-left: var(--sidebar-width); 
             }
-            
+
             .sidebar-overlay {
                 display: none !important;
             }
-            
+
             .sidebar-close {
                 display: none;
             }
@@ -348,21 +375,21 @@
 <body>
     <!-- Overlay for mobile -->
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
-    
+
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <h2 class="sidebar-title">⚙️ Configuración</h2>
             <button class="sidebar-close" id="sidebar-close">✕</button>
         </div>
-        
+
         <button id="new-chat-btn" class="new-chat">＋ Nuevo Chat</button>
         <div class="sidebar-divider"></div>
-        
+
         <!-- API Status -->
         <div id="api-status" class="api-status">
             <div id="status-text">Verificando conexión...</div>
         </div>
-        
+
         <h2>Chats Guardados</h2>
         <ul id="saved-chats-list" class="saved-chats-list"></ul>
         <div class="sidebar-divider"></div>
@@ -399,7 +426,7 @@
             <p class="description">Información adicional para el contexto.</p>
         </div>
     </div>
-    
+
     <div class="main-content" id="main-content">
         <div class="chat-container">
             <div class="chat-header">
@@ -423,11 +450,11 @@
             </div>
         </div>
     </div>
-    
+
     <script>
         // ======= CONFIGURACIÓN DEL BACKEND =======
         const API_BASE_URL = 'https://c3e7a371-7ca5-4109-b0e9-cec20f574b22-00-10bw3d7bc7o4o.riker.replit.dev';
-        
+
         // ======= ELEMENTOS DOM =======
         const promptInput = document.getElementById('prompt-input');
         const attachmentBtn = document.getElementById('attachment-btn');
@@ -449,7 +476,7 @@
         const contextInput = document.getElementById('context-input');
         const apiStatus = document.getElementById('api-status');
         const statusText = document.getElementById('status-text');
-        
+
         let attachedFile = null;
         let conversationHistory = [];
         let currentChatId = null;
@@ -488,23 +515,23 @@
             fileInput.value = '';
             attachmentPreviewContainer.style.display = 'none';
         });
-        
+
         fileInput.addEventListener('change', (event) => {
             const file = event.target.files[0];
             if (!file) return;
-            
+
             // Validaciones
             if (file.size > 10 * 1024 * 1024) {
                 alert('El archivo excede el límite de 10MB');
                 return;
             }
-            
+
             const allowedTypes = ['application/pdf', 'text/plain'];
             if (!allowedTypes.includes(file.type)) {
                 alert('Solo se admiten archivos PDF y TXT');
                 return;
             }
-            
+
             attachedFile = file;
             attachmentFilename.textContent = file.name;
             attachmentPreviewContainer.style.display = 'inline-block';
@@ -515,7 +542,7 @@
             try {
                 const response = await fetch(`${API_BASE_URL}/health`);
                 const data = await response.json();
-                
+
                 if (response.ok && data.status === 'healthy') {
                     apiStatus.className = 'api-status connected';
                     statusText.textContent = '✅ API conectada correctamente';
@@ -606,7 +633,7 @@
             'gpt-oss-20b': 'Modelo Open Source rápido.',
             'gpt-oss-120b': 'Modelo Open Source potente, ideal para tareas complejas.'
         };
-        
+
         modelSelect.addEventListener('change', () => {
             document.getElementById('model-description').textContent = modelDescriptions[modelSelect.value];
         });
@@ -623,7 +650,7 @@
             if (diffMins < 1) return 'ahora';
             if (diffMins < 60) return `${diffMins} min`;
             if (diffHours < 24) return `${diffHours} h`;
-            
+
             return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
         }
 
@@ -642,40 +669,48 @@
                 chatOutput.appendChild(welcomeDiv);
                 return;
             }
-            
+
             conversationHistory.forEach(message => {
                 const messageWrapper = document.createElement('div');
                 messageWrapper.classList.add('message-wrapper', message.role === 'user' ? 'user-message' : 'ai-message');
                 const messageContent = document.createElement('div');
                 messageContent.classList.add('message-content');
-                
+
                 let contentHTML = `<strong>${message.role === 'user' ? 'Tú' : 'IA'}:</strong><br>`;
                 if (message.role === 'user' && message.fileName) {
                     contentHTML += `<p style="font-style: italic; color: #6c757d;">📎 Archivo: ${message.fileName}</p>`;
                 }
                 contentHTML += message.role === 'assistant' ? marked.parse(message.content) : message.content;
                 messageContent.innerHTML = contentHTML;
-                
+
                 // Mejorar tablas para móvil
                 if (message.role === 'assistant') {
                     const tables = messageContent.querySelectorAll('table');
                     tables.forEach(table => {
                         const headers = table.querySelectorAll('th');
                         const rows = table.querySelectorAll('tbody tr, tr:not(:first-child)');
-                        
+
+                        // Crear array de headers para referencia
+                        const headerTexts = Array.from(headers).map(h => h.textContent.trim());
+
                         rows.forEach(row => {
                             const cells = row.querySelectorAll('td');
                             cells.forEach((cell, index) => {
-                                if (headers[index]) {
-                                    cell.setAttribute('data-label', headers[index].textContent.trim());
+                                // Usar el header correspondiente o crear uno genérico
+                                const labelText = headerTexts[index] || `Campo ${index + 1}`;
+                                cell.setAttribute('data-label', labelText);
+
+                                // Asegurar que el contenido sea legible
+                                if (cell.textContent.trim() === '') {
+                                    cell.textContent = '-';
                                 }
                             });
                         });
                     });
-                    
+
                     messageContent.appendChild(createCopyButton(message.content));
                 }
-                
+
                 messageWrapper.appendChild(messageContent);
                 const timestampDiv = document.createElement('div');
                 timestampDiv.className = 'timestamp';
@@ -700,57 +735,57 @@
         async function sendPrompt() {
             const prompt = promptInput.value.trim();
             if (prompt === '' && !attachedFile) return;
-            
+
             // Manejar archivo primero si existe
             if (attachedFile) {
                 await handleFileUpload();
                 return;
             }
-            
+
             // Agregar mensaje del usuario al historial de conversación
             const userMessage = {
                 role: 'user',
                 content: prompt,
                 timestamp: new Date().toISOString()
             };
-            
+
             conversationHistory.push(userMessage);
             saveCurrentConversation();
             renderConversation();
-            
+
             promptInput.value = '';
             autoResizeTextarea();
             promptInput.disabled = true;
             sendButton.disabled = true;
             sendButton.textContent = 'Pensando...';
-            
+
             try {
                 // Preparar el historial completo para enviar al backend
                 const messagesToSend = conversationHistory.map(msg => ({
                     role: msg.role,
                     content: msg.content
                 }));
-                
+
                 const requestData = {
                     message: prompt,
                     model: modelSelect.value,
                     mode: modeSelect.value,
                     conversation_history: messagesToSend  // Incluir historial completo
                 };
-                
+
                 const context = contextInput.value.trim();
                 if (context) {
                     requestData.context = context;
                 }
-                
+
                 const response = await fetch(`${API_BASE_URL}/chat`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(requestData)
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (response.ok && data.success) {
                     const aiMessage = {
                         role: 'assistant',
@@ -765,7 +800,7 @@
                 } else {
                     throw new Error(data.message || 'Error al obtener respuesta');
                 }
-                
+
             } catch (error) {
                 console.error('Error:', error);
                 alert(`Error: ${error.message}`);
@@ -779,51 +814,51 @@
 
         async function handleFileUpload() {
             if (!attachedFile) return;
-            
+
             const userMessage = {
                 role: 'user',
                 content: promptInput.value.trim() || `Subiendo archivo: ${attachedFile.name}`,
                 fileName: attachedFile.name,
                 timestamp: new Date().toISOString()
             };
-            
+
             conversationHistory.push(userMessage);
             saveCurrentConversation();
             renderConversation();
-            
+
             promptInput.value = '';
             autoResizeTextarea();
             promptInput.disabled = true;
             sendButton.disabled = true;
             sendButton.textContent = 'Procesando archivo...';
-            
+
             try {
                 const formData = new FormData();
                 formData.append('file', attachedFile);
                 formData.append('process_with_ai', 'true');
                 formData.append('model', modelSelect.value);
-                
+
                 const question = promptInput.value.trim();
                 if (question) {
                     formData.append('question', question);
                 }
-                
+
                 const response = await fetch(`${API_BASE_URL}/upload`, {
                     method: 'POST',
                     body: formData
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (response.ok && data.success) {
                     let responseText = `✅ Archivo procesado: **${data.file_info.filename}**\n\n`;
                     responseText += `📊 Tamaño: ${formatFileSize(data.file_info.size)}\n`;
                     responseText += `📝 Palabras: ${data.file_info.word_count.toLocaleString()}\n\n`;
-                    
+
                     if (data.ai_analysis) {
                         responseText += `**Análisis de IA:**\n${data.ai_analysis.response}`;
                     }
-                    
+
                     const aiMessage = {
                         role: 'assistant',
                         content: responseText,
@@ -836,7 +871,7 @@
                 } else {
                     throw new Error(data.message || 'Error al procesar archivo');
                 }
-                
+
             } catch (error) {
                 console.error('Error:', error);
                 alert(`Error: ${error.message}`);
@@ -884,7 +919,7 @@
                 sendPrompt(); 
             } 
         });
-        
+
         newChatBtn.addEventListener('click', startNewChat);
         savedChatsList.addEventListener('click', (event) => { 
             const listItem = event.target.closest('li'); 
@@ -901,7 +936,7 @@
         checkAPIStatus();
         startNewChat();
         updateSavedChatsList();
-        
+
         // Auto-focus en el input
         promptInput.focus();
     </script>
