@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat IA - Groq Integration</title>
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h5><i class="fas fa-robot me-2"></i>Chat IA</h5>
+            <button class="btn btn-sm btn-outline-light" id="sidebar-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="sidebar-content">
+            <!-- Modelo de IA -->
+            <div class="mb-3">
+                <label for="chat-model" class="form-label">Modelo de IA</label>
+                <select class="form-select form-select-sm" id="chat-model">
+                    <option value="llama3-8b">Llama 3 8B (Rápido)</option>
+                    <option value="llama3-70b">Llama 3 70B (Avanzado)</option>
+                    <option value="mixtral">Mixtral 8x7B</option>
+                    <option value="gemma">Gemma 7B</option>
+                    <option value="gpt-oss-20b">GPT-OSS 20B (OpenAI)</option>
+                    <option value="gpt-oss-120b">GPT-OSS 120B (OpenAI Avanzado)</option>
+                </select>
+            </div>
+            
+            <!-- Modo -->
+            <div class="mb-3">
+                <label for="chat-mode" class="form-label">Modo</label>
+                <select class="form-select form-select-sm" id="chat-mode">
+                    <option value="basic">Básico</option>
+                    <option value="pro">Pro (Mejorado)</option>
+                </select>
+            </div>
+            
+            <!-- Contexto -->
+            <div class="mb-3">
+                <label for="chat-context" class="form-label">Contexto adicional</label>
+                <textarea class="form-control form-control-sm" id="chat-context" rows="3" placeholder="Proporciona contexto o información adicional..."></textarea>
+            </div>
+            
+            <hr>
+            
+            <!-- Subir archivos -->
+            <div class="mb-3">
+                <label for="file-input" class="form-label">Subir archivo</label>
+                <input type="file" class="form-control form-control-sm" id="file-input" accept=".txt,.pdf">
+                <div class="form-text">PDF, TXT (Max: 10MB)</div>
+            </div>
+            
+            <div class="mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="process-with-ai">
+                    <label class="form-check-label" for="process-with-ai">
+                        Procesar con IA
+                    </label>
+                </div>
+            </div>
+            
+            <div id="ai-options" style="display: none;">
+                <div class="mb-3">
+                    <label for="upload-question" class="form-label">Pregunta específica</label>
+                    <textarea class="form-control form-control-sm" id="upload-question" rows="2" placeholder="Haz una pregunta específica sobre el documento..."></textarea>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <!-- Estado API -->
+            <div class="mb-3">
+                <label class="form-label">Estado de la API</label>
+                <div id="api-status" class="d-flex align-items-center">
+                    <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                    <span>Verificando estado...</span>
+                </div>
+            </div>
+            
+            <!-- Información de modelos -->
+            <div class="mb-3">
+                <small class="text-muted">
+                    <strong>Modo Básico:</strong> Respuesta directa con procesamiento estándar.<br><br>
+                    <strong>Modo Pro:</strong> Procesamiento mejorado con múltiples perspectivas y síntesis para respuestas más completas.
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Chat Area -->
+    <div class="main-content" id="main-content">
+        <!-- Header -->
+        <div class="chat-header">
+            <button class="btn btn-link p-0" id="sidebar-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h5 class="mb-0 ms-3">Chat IA</h5>
+        </div>
+        
+        <!-- Chat Messages Area -->
+        <div class="chat-container" id="chat-container">
+            <div class="chat-messages" id="chat-messages">
+                <div class="welcome-message">
+                    <div class="text-center">
+                        <i class="fas fa-robot text-primary mb-3" style="font-size: 3rem;"></i>
+                        <h4>¡Hola! Soy tu asistente de IA</h4>
+                        <p class="text-muted">Puedes hacer preguntas, subir archivos PDF/TXT, y elegir entre diferentes modelos de IA.</p>
+                        <p class="text-muted">Usa el menú lateral para configurar el modelo y modo de respuesta.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat Input -->
+        <div class="chat-input-container">
+            <form id="chat-form" class="d-flex gap-2 align-items-end">
+                <div class="input-group">
+                    <button type="button" class="btn btn-outline-secondary" id="attach-file-btn" title="Subir archivo">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                    <textarea class="form-control" id="chat-message" rows="1" placeholder="Escribe tu mensaje aquí..." required style="resize: none; max-height: 120px;"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" id="chat-submit" title="Enviar mensaje">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Overlay for mobile sidebar -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
