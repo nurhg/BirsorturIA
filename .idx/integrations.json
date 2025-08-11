@@ -1,4 +1,7 @@
 {
-  "firebase_hosting": {},
-  "cloud_run_deploy": {}
+  "firebase_hosting": {
+    "deploymentHostingUrl": "https://birsortur-a5389.web.app"
+  },
+  "cloud_run_deploy": {},
+  "gemini_api": {}
 }
