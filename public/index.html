@@ -1,89 +1,1182 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Welcome to Firebase Hosting</title>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BirsorturIA</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <style>
+        :root { --sidebar-width: 280px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .app-wrapper { display: flex; width: 100%; height: 100vh; }
 
-    <!-- update the version number as needed -->
-    <script defer src="/__/firebase/12.1.0/firebase-app-compat.js"></script>
-    <!-- include only the Firebase features as you need -->
-    <script defer src="/__/firebase/12.1.0/firebase-auth-compat.js"></script>
-    <script defer src="/__/firebase/12.1.0/firebase-database-compat.js"></script>
-    <script defer src="/__/firebase/12.1.0/firebase-firestore-compat.js"></script>
-    <script defer src="/__/firebase/12.1.0/firebase-functions-compat.js"></script>
-    <script defer src="/__/firebase/12.1.0/firebase-messaging-compat.js"></script>
-    <script defer src="/__/firebase/12.1.0/firebase-storage-compat.js"></script>
-    <script defer src="/__/firebase/12.1.0/firebase-analytics-compat.js"></script>
-    <script defer src="/__/firebase/12.1.0/firebase-remote-config-compat.js"></script>
-    <script defer src="/__/firebase/12.1.0/firebase-performance-compat.js"></script>
-    <!-- 
-      initialize the SDK after all desired features are loaded, set useEmulator to false
-      to avoid connecting the SDK to running emulators.
-    -->
-    <script defer src="/__/firebase/init.js?useEmulator=true"></script>
+        /* Sidebar Styles */
+        .sidebar { 
+            position: fixed; 
+            top: 0; 
+            left: -100%; 
+            width: var(--sidebar-width); 
+            height: 100%; 
+            background-color: #f8f9fa; 
+            border-right: 1px solid #dee2e6; 
+            padding: 20px; 
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1); 
+            transition: left 0.3s ease-in-out; 
+            z-index: 1000; 
+            box-sizing: border-box; 
+            display: flex; 
+            flex-direction: column; 
+            overflow-y: auto;
+        }
+        .sidebar.open { left: 0; }
 
-    <style media="screen">
-      body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
-      #message { background: white; max-width: 360px; margin: 100px auto 16px; padding: 32px 24px; border-radius: 3px; }
-      #message h2 { color: #ffa100; font-weight: bold; font-size: 16px; margin: 0 0 8px; }
-      #message h1 { font-size: 22px; font-weight: 300; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
-      #message p { line-height: 140%; margin: 16px 0 24px; font-size: 14px; }
-      #message a { display: block; text-align: center; background: #039be5; text-transform: uppercase; text-decoration: none; color: white; padding: 16px; border-radius: 4px; }
-      #message, #message a { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
-      #load { color: rgba(0,0,0,0.4); text-align: center; font-size: 13px; }
-      @media (max-width: 600px) {
-        body, #message { margin-top: 0; background: white; box-shadow: none; }
-        body { border-top: 16px solid #ffa100; }
-      }
+        /* Sidebar Header with Close Button */
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .sidebar-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 0;
+        }
+        .sidebar-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 4px;
+            color: #6c757d;
+        }
+        .sidebar-close:hover {
+            background-color: #e9ecef;
+            color: #495057;
+        }
+
+        /* Overlay for mobile */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        }
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        .sidebar h2 { margin-top: 0; font-size: 1.2rem; }
+        .sidebar button.new-chat { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; background-color: #1a73e8; color: white; cursor: pointer; margin-bottom: 10px; font-size: 1rem; }
+        .sidebar-divider { border-top: 1px solid #dee2e6; margin: 20px 0; }
+        .saved-chats-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; max-height: 30vh; }
+        .saved-chats-list li { display: flex; align-items: center; justify-content: space-between; padding: 10px; border-radius: 6px; cursor: pointer; margin-bottom: 5px; }
+        .saved-chats-list li:hover { background-color: #e9ecef; }
+        .saved-chats-list li.active { background-color: #d1e7fd; font-weight: bold; }
+        .chat-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-grow: 1; }
+        .delete-chat-btn { background: none; border: none; cursor: pointer; color: #dc3545; font-size: 1.2rem; padding: 0 5px; opacity: 0.5; }
+        .saved-chats-list li:hover .delete-chat-btn { opacity: 1; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; }
+        .form-group select, .form-group input, .form-group textarea { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc; box-sizing: border-box; }
+        #temp-value { font-weight: bold; color: #1a73e8; }
+        .description { font-size: 0.85rem; color: #6c757d; margin-top: 8px; }
+
+        /* Main Content */
+        .main-content { 
+            width: 100%; 
+            height: 100vh; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            transition: margin-left 0.3s ease-in-out; 
+        }
+        .chat-container { 
+            background-color: #fff; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
+            width: 90%; 
+            max-width: 800px; 
+            height: 90vh; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+        }
+
+        /* Chat Header */
+        .chat-header { 
+            padding: 10px 20px; 
+            border-bottom: 1px solid #e0e0e0; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px;
+        }
+        .settings-button { 
+            background: none; 
+            border: none; 
+            font-size: 24px; 
+            cursor: pointer; 
+            padding: 8px;
+            border-radius: 4px;
+            color: #6c757d;
+        }
+        .settings-button:hover {
+            background-color: #f8f9fa;
+            color: #495057;
+        }
+        .chat-title-text {
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .chat-output { flex-grow: 1; padding: 20px; overflow-y: auto; }
+        .chat-input-area { padding: 15px; border-top: 1px solid #e0e0e0; }
+        .attachment-preview-container { margin-bottom: 10px; text-align: left; position: relative; display: inline-block; background-color: #e9ecef; padding: 5px 10px; border-radius: 6px; }
+        #attachment-filename { vertical-align: middle; margin-left: 10px; font-style: italic; }
+        .remove-attachment-btn { position: absolute; top: -10px; right: -10px; width: 22px; height: 22px; border-radius: 50%; background-color: rgba(0,0,0,0.6); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; line-height: 22px; }
+        .chat-input { display: flex; align-items: center; gap: 10px; }
+        .chat-input textarea { flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 6px; resize: none; font-size: 1rem; line-height: 1.5; min-height: 44px; max-height: 120px; }
+        .chat-input button { padding: 10px 20px; background-color: #1a73e8; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; }
+        .attachment-btn { background: none; border: none; cursor: pointer; padding: 8px; color: #6c757d; display: flex; align-items: center; justify-content: center; border-radius: 4px; }
+        .attachment-btn:hover { background-color: #f8f9fa; }
+        .attachment-btn svg { width: 20px; height: 20px; }
+
+        /* Messages */
+        .message-wrapper { display: flex; flex-direction: column; margin-bottom: 20px; max-width: 90%; }
+        .message-content { position: relative; padding: 12px 18px; border-radius: 18px; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word; }
+        .user-message { align-self: flex-end; }
+        .user-message .message-content { background-color: #e3f2fd; }
+        .ai-message { align-self: flex-start; }
+        .ai-message .message-content { background-color: #f1f8e9; }
+        .error-message .message-content { background-color: #ffebee; border-left: 4px solid #f44336; }
+        .ai-message pre { background-color: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 8px; overflow-x: auto; }
+        .copy-btn { position: absolute; top: 8px; right: 8px; background-color: #e0e0e0; border: none; border-radius: 4px; cursor: pointer; padding: 4px; opacity: 0.5; }
+        .ai-message .message-content:hover .copy-btn { opacity: 1; }
+        .copy-btn svg { width: 16px; height: 16px; display: block; }
+        .copy-btn.copied { background-color: #4CAF50; }
+        .timestamp { font-size: 0.75rem; color: #999; margin-top: 5px; }
+        .user-message .timestamp { text-align: right; }
+        .ai-message .timestamp { text-align: left; }
+
+        /* API Status */
+        .api-status { padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 0.9rem; }
+        .api-status.connected { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .api-status.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        /* Table Styles (General) */
+        .ai-message table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 0.9rem;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .ai-message th, .ai-message td {
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+            word-wrap: break-word;
+            vertical-align: top;
+        }
+
+        .ai-message th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .ai-message tr:last-child td {
+            border-bottom: none;
+        }
+
+        .ai-message tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* Mobile Responsive Styles */
+            @media (max-width: 768px) {
+                .sidebar {
+                    width: 300px; /* Slightly wider on mobile */
+                }
+
+                .chat-container {
+                    width: 95%;
+                    height: 95vh;
+                    border-radius: 0;
+                }
+
+                .chat-header {
+                    padding: 12px 15px;
+                }
+
+                .chat-input {
+                    flex-wrap: wrap;
+                    gap: 8px;
+                }
+
+                .chat-input textarea {
+                    font-size: 16px; /* Prevents zoom on iOS */
+                }
+
+                .message-content {
+                    max-width: 100%;
+                    font-size: 0.9rem;
+                }
+
+                .form-group select,
+                .form-group input,
+                .form-group textarea {
+                    font-size: 16px; /* Prevents zoom on iOS */
+                }
+
+                /* Mobile Table Styles - Completamente rediseñadas */
+                .ai-message table {
+                    display: block;
+                    width: 100%;
+                    overflow-x: auto;
+                    white-space: nowrap;
+                    margin: 15px 0;
+                    border: none;
+                    box-shadow: none;
+                }
+
+                .ai-message thead {
+                    display: none;
+                }
+
+                .ai-message tbody {
+                    display: block;
+                }
+
+                .ai-message tr {
+                    display: block;
+                    border: 1px solid #e0e0e0;
+                    border-radius: 8px;
+                    margin-bottom: 15px;
+                    padding: 15px;
+                    background-color: white;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                }
+
+                .ai-message td {
+                    display: block;
+                    border: none;
+                    border-bottom: 1px solid #f0f0f0;
+                    padding: 8px 0;
+                    position: relative;
+                    text-align: left;
+                    white-space: normal;
+                    word-wrap: break-word;
+                    overflow-wrap: break-word;
+                }
+
+                .ai-message td:last-child {
+                    border-bottom: none;
+                }
+
+                .ai-message td:before {
+                    content: attr(data-label);
+                    display: block;
+                    font-weight: 700;
+                    color: #495057;
+                    font-size: 0.85rem;
+                    margin-bottom: 5px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+
+                .ai-message td:after {
+                    content: "";
+                    display: block;
+                    clear: both;
+                }
+
+                /* Estilos específicos para diferentes tipos de contenido en tablas */
+                .ai-message td strong {
+                    color: #2c3e50;
+                }
+
+                .ai-message td em {
+                    color: #7f8c8d;
+                    font-style: italic;
+                }
+
+                /* Better text wrapping for mobile */
+                .message-content p, .message-content li {
+                    word-wrap: break-word;
+                    overflow-wrap: break-word;
+                    hyphens: auto;
+                }
+
+                /* Improve readability */
+                .message-content {
+                    line-height: 1.5;
+                }
+
+                .message-content h1, .message-content h2, .message-content h3 {
+                    font-size: 1.1rem;
+                    margin: 15px 0 10px 0;
+                    line-height: 1.3;
+                }
+
+                .message-content ul, .message-content ol {
+                    padding-left: 20px;
+                    margin: 10px 0;
+                }
+
+                .message-content li {
+                    margin-bottom: 5px;
+                }
+
+                /* Estilos adicionales para mejorar la legibilidad en móvil */
+                .message-content blockquote {
+                    border-left: 4px solid #e74c3c;
+                    padding-left: 15px;
+                    margin: 15px 0;
+                    font-style: italic;
+                    color: #7f8c8d;
+                }
+
+                .message-content code {
+                    background-color: #f8f9fa;
+                    padding: 2px 6px;
+                    border-radius: 4px;
+                    font-family: 'Courier New', monospace;
+                    font-size: 0.85rem;
+                }
+            }
+
+        /* Desktop Styles */
+        @media (min-width: 1024px) {
+            .main-content.sidebar-open { 
+                margin-left: var(--sidebar-width); 
+            }
+
+            .sidebar-overlay {
+                display: none !important;
+            }
+
+            .sidebar-close {
+                display: none;
+            }
+        }
     </style>
-  </head>
-  <body>
-    <div id="message">
-      <h2>Welcome</h2>
-      <h1>Firebase Hosting Setup Complete</h1>
-      <p>You're seeing this because you've successfully setup Firebase Hosting. Now it's time to go build something extraordinary!</p>
-      <a target="_blank" href="https://firebase.google.com/docs/hosting/">Open Hosting Documentation</a>
+</head>
+<body>
+    <!-- Overlay for mobile -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2 class="sidebar-title">⚙️ Configuración</h2>
+            <button class="sidebar-close" id="sidebar-close">✕</button>
+        </div>
+
+        <button id="new-chat-btn" class="new-chat">＋ Nuevo Chat</button>
+        <div class="sidebar-divider"></div>
+
+        <!-- API Status -->
+        <div id="api-status" class="api-status">
+            <div id="status-text">Verificando conexión...</div>
+        </div>
+
+        <h2>Chats Guardados</h2>
+        <ul id="saved-chats-list" class="saved-chats-list"></ul>
+        <div class="sidebar-divider"></div>
+        <h2>Configuración</h2>
+        <div class="form-group">
+            <label for="model-select">Modelo</label>
+            <select id="model-select">
+                <optgroup label="Modelos Rápidos">
+                    <option value="llama3-8b">Llama 3 8B (Rápido)</option>
+                    <option value="gemma">Gemma 7B (Equilibrado)</option>
+                </optgroup>
+                <optgroup label="Modelos Potentes">
+                    <option value="llama3-70b">Llama 3 70B (Preciso)</option>
+                    <option value="mixtral">Mixtral 8x7B (Versátil)</option>
+                </optgroup>
+                <optgroup label="Modelos Open Source">
+                    <option value="gpt-oss-20b">GPT-OSS 20B (Rápido)</option>
+                    <option value="gpt-oss-120b">GPT-OSS 120B (Potente)</option>
+                </optgroup>
+                <optgroup label="Modelos de Visión">
+                    <option value="meta-llama/llama-4-scout-17b-16e-instruct">Meta llama4 (Imágenes)</option>
+                </optgroup>
+            </select>
+            <p class="description" id="model-description">Elige el motor de IA.</p>
+        </div>
+        <div class="form-group">
+            <label for="mode-select">Modo</label>
+            <select id="mode-select">
+                <option value="basic">Básico</option>
+                <option value="pro">Pro (Mejorado)</option>
+            </select>
+            <p class="description">Modo Pro usa múltiples perspectivas para mejores respuestas.</p>
+        </div>
+        <div class="form-group">
+            <label for="context-input">Contexto adicional</label>
+            <textarea id="context-input" rows="3" placeholder="Proporciona contexto adicional..."></textarea>
+            <p class="description">Información adicional para el contexto.</p>
+        </div>
     </div>
-    <p id="load">Firebase SDK Loading&hellip;</p>
+
+    <div class="main-content" id="main-content">
+        <div class="chat-container">
+            <div class="chat-header">
+                <button class="settings-button" id="settings-button">☰</button>
+                <h1 class="chat-title-text">BirsorturIA</h1>
+            </div>
+            <div class="chat-output" id="chat-output"></div>
+            <div class="chat-input-area">
+                <div id="attachment-preview-container" style="display: none;">
+                    <span id="attachment-filename"></span>
+                    <button id="remove-attachment-btn" class="remove-attachment-btn">×</button>
+                </div>
+                <div class="chat-input">
+                    <input type="file" id="file-input" accept="application/pdf,text/plain,image/png,image/jpeg,image/gif" style="display: none;">
+                    <button id="attachment-btn" class="attachment-btn" title="Adjuntar archivo">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/></svg>
+                    </button>
+                    <textarea id="prompt-input" placeholder="Escribe tu prompt aquí..." rows="1"></textarea>
+                    <button id="send-button">Enviar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const loadEl = document.querySelector('#load');
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-        // // The Firebase SDK is initialized and available here!
-        //
-        // firebase.auth().onAuthStateChanged(user => { });
-        // firebase.database().ref('/path/to/ref').on('value', snapshot => { });
-        // firebase.firestore().doc('/foo/bar').get().then(() => { });
-        // firebase.functions().httpsCallable('yourFunction')().then(() => { });
-        // firebase.messaging().requestPermission().then(() => { });
-        // firebase.storage().ref('/path/to/ref').getDownloadURL().then(() => { });
-        // firebase.analytics(); // call to activate
-        // firebase.analytics().logEvent('tutorial_completed');
-        // firebase.performance(); // call to activate
-        //
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+        // ======= CONFIGURACIÓN DEL BACKEND =======
+        const API_BASE_URL = 'https://birsorturia-service-705658168026.northamerica-south1.run.app';
 
-        try {
-          let app = firebase.app();
-          let features = [
-            'auth', 
-            'database', 
-            'firestore',
-            'functions',
-            'messaging', 
-            'storage', 
-            'analytics', 
-            'remoteConfig',
-            'performance',
-          ].filter(feature => typeof app[feature] === 'function');
-          loadEl.textContent = `Firebase SDK loaded with ${features.join(', ')}`;
-        } catch (e) {
-          console.error(e);
-          loadEl.textContent = 'Error loading the Firebase SDK, check the console.';
+        // ======= ELEMENTOS DOM =======
+        const promptInput = document.getElementById('prompt-input');
+        const attachmentBtn = document.getElementById('attachment-btn');
+        const fileInput = document.getElementById('file-input');
+        const attachmentPreviewContainer = document.getElementById('attachment-preview-container');
+        const attachmentFilename = document.getElementById('attachment-filename');
+        const removeAttachmentBtn = document.getElementById('remove-attachment-btn');
+        const sendButton = document.getElementById('send-button');
+        const chatOutput = document.getElementById('chat-output');
+        const settingsButton = document.getElementById('settings-button');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarClose = document.getElementById('sidebar-close');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        const mainContent = document.getElementById('main-content');
+        const newChatBtn = document.getElementById('new-chat-btn');
+        const savedChatsList = document.getElementById('saved-chats-list');
+        const modelSelect = document.getElementById('model-select');
+        const modeSelect = document.getElementById('mode-select');
+        const contextInput = document.getElementById('context-input');
+        const apiStatus = document.getElementById('api-status');
+        const statusText = document.getElementById('status-text');
+
+        let attachedFile = null;
+        let conversationHistory = [];
+        let currentChatId = null;
+
+        // ======= SIDEBAR MANAGEMENT =======
+        function openSidebar() {
+            sidebar.classList.add('open');
+            sidebarOverlay.classList.add('active');
+            if (window.innerWidth >= 1024) {
+                mainContent.classList.add('sidebar-open');
+            }
         }
-      });
+
+        function closeSidebar() {
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('active');
+            mainContent.classList.remove('sidebar-open');
+        }
+
+        settingsButton.addEventListener('click', openSidebar);
+        sidebarClose.addEventListener('click', closeSidebar);
+        sidebarOverlay.addEventListener('click', closeSidebar);
+
+        // Auto-resize textarea
+        function autoResizeTextarea() {
+            promptInput.style.height = 'auto';
+            promptInput.style.height = Math.min(promptInput.scrollHeight, 120) + 'px';
+        }
+
+        promptInput.addEventListener('input', autoResizeTextarea);
+
+        // ======= MANEJO DE ARCHIVOS =======
+        attachmentBtn.addEventListener('click', () => fileInput.click());
+        removeAttachmentBtn.addEventListener('click', () => {
+            attachedFile = null;
+            fileInput.value = '';
+            attachmentPreviewContainer.style.display = 'none';
+            // Remove image preview if it exists
+            const imagePreview = document.getElementById('image-preview');
+            if (imagePreview) {
+                imagePreview.remove();
+            }
+        });
+
+        function handleFileSelection(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Validaciones
+            if (file.size > 10 * 1024 * 1024) {
+                alert('El archivo excede el límite de 10MB');
+                return;
+            }
+
+            const allowedTypes = ['application/pdf', 'text/plain', 'image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+            if (!allowedTypes.includes(file.type)) {
+                alert('Solo se admiten archivos PDF, TXT, PNG, JPG, GIF y WebP');
+                return;
+            }
+
+            attachedFile = file;
+            attachmentFilename.textContent = file.name;
+            attachmentPreviewContainer.style.display = 'inline-block';
+
+            // Show image preview if it's an image file
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    let imagePreview = document.getElementById('image-preview');
+                    if (!imagePreview) {
+                        imagePreview = document.createElement('img');
+                        imagePreview.id = 'image-preview';
+                        imagePreview.style.maxWidth = '200px';
+                        imagePreview.style.maxHeight = '200px';
+                        imagePreview.style.borderRadius = '6px';
+                        imagePreview.style.marginTop = '10px';
+                        imagePreview.style.display = 'block';
+                        attachmentPreviewContainer.appendChild(imagePreview);
+                    }
+                    imagePreview.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        fileInput.addEventListener('change', handleFileSelection);
+
+
+        // Allow dropping files
+        const chatContainer = document.querySelector('.chat-container');
+        chatContainer.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            chatContainer.style.borderColor = '#1a73e8';
+        });
+        chatContainer.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            chatContainer.style.borderColor = '#ccc';
+        });
+        chatContainer.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            chatContainer.style.borderColor = '#ccc';
+            handleDrop(e);
+        });
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+
+            if (files.length > 0) {
+                const file = files[0];
+                // Simular selección de archivo
+                const event = new Event('change');
+                fileInput.files = files;
+                fileInput.dispatchEvent(event);
+            }
+        }
+
+        // ======= VERIFICAR API =======
+        async function checkAPIStatus() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`);
+                const data = await response.json();
+
+                if (response.ok && data.status === 'healthy') {
+                    apiStatus.className = 'api-status connected';
+                    statusText.textContent = '✅ API conectada correctamente';
+                } else {
+                    throw new Error('API no disponible');
+                }
+            } catch (error) {
+                apiStatus.className = 'api-status error';
+                statusText.textContent = '❌ Error de conexión con la API';
+                console.error('API status check failed:', error);
+            }
+        }
+
+        // ======= GESTIÓN DE CHATS =======
+        function startNewChat() { 
+            currentChatId = `chat_${Date.now()}`; 
+            conversationHistory = []; 
+            renderConversation(); 
+            updateSavedChatsList(); 
+            promptInput.focus(); 
+            closeSidebar();
+        }
+
+        function saveCurrentConversation() { 
+            if (!currentChatId || conversationHistory.length === 0) return; 
+            localStorage.setItem(currentChatId, JSON.stringify(conversationHistory)); 
+            updateSavedChatsList(); 
+        }
+
+        function loadConversation(chatId) { 
+            if (!chatId) return; 
+            const savedHistory = localStorage.getItem(chatId); 
+            if (savedHistory) { 
+                currentChatId = chatId; 
+                conversationHistory = JSON.parse(savedHistory); 
+                renderConversation(); 
+                updateSavedChatsList(); 
+                closeSidebar();
+            } 
+        }
+
+        function deleteConversation(chatId) { 
+            if (!chatId || !confirm(`¿Estás seguro de que quieres eliminar este chat?`)) return; 
+            localStorage.removeItem(chatId); 
+            if (currentChatId === chatId) { 
+                startNewChat(); 
+            } 
+            updateSavedChatsList(); 
+        }
+
+        function updateSavedChatsList() { 
+            savedChatsList.innerHTML = ''; 
+            const chats = []; 
+            for (let i = 0; i < localStorage.length; i++) { 
+                const key = localStorage.key(i); 
+                if (key && key.startsWith('chat_')) { 
+                    chats.push(key); 
+                } 
+            } 
+            chats.sort().reverse(); 
+            chats.forEach(key => { 
+                const listItem = document.createElement('li'); 
+                listItem.dataset.chatId = key; 
+                if (key === currentChatId) { 
+                    listItem.classList.add('active'); 
+                } 
+                const titleSpan = document.createElement('span'); 
+                titleSpan.className = 'chat-title'; 
+                const history = JSON.parse(localStorage.getItem(key)); 
+                const firstUserMessage = history.find(m => m.role === 'user'); 
+                titleSpan.textContent = firstUserMessage ? firstUserMessage.content.substring(0, 20) + '...' : 'Nuevo Chat'; 
+                const deleteBtn = document.createElement('button'); 
+                deleteBtn.className = 'delete-chat-btn'; 
+                deleteBtn.innerHTML = '×'; 
+                deleteBtn.title = 'Eliminar chat'; 
+                listItem.appendChild(titleSpan); 
+                listItem.appendChild(deleteBtn); 
+                savedChatsList.appendChild(listItem); 
+            }); 
+        }
+
+        // Descripciones dinámicas
+        const modelDescriptions = {
+            'llama3-8b': 'Muy rápido, ideal para respuestas cortas.',
+            'llama3-70b': 'Alta precisión, ideal para análisis profundos.',
+            'mixtral': 'Contexto largo, versátil y rápido.',
+            'gemma': 'Eficiente y ligero.',
+            'gpt-oss-20b': 'Modelo Open Source rápido.',
+            'gpt-oss-120b': 'Modelo Open Source potente, ideal para tareas complejas.',
+            'meta-llama/llama-4-scout-17b-16e-instruct': 'Especializado en análisis de imágenes y visión por computadora.'
+        };
+
+        modelSelect.addEventListener('change', () => {
+            document.getElementById('model-description').textContent = modelDescriptions[modelSelect.value];
+        });
+
+        // ======= UTILIDADES =======
+        function formatTimestamp(isoString) {
+            if (!isoString) return '';
+            const date = new Date(isoString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / (1000 * 60));
+            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+
+            if (diffMins < 1) return 'ahora';
+            if (diffMins < 60) return `${diffMins} min`;
+            if (diffHours < 24) return `${diffHours} h`;
+
+            return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+        }
+
+        function renderConversation() {
+            chatOutput.innerHTML = '';
+            if (conversationHistory.length === 0) {
+                const welcomeDiv = document.createElement('div');
+                welcomeDiv.style.textAlign = 'center';
+                welcomeDiv.style.padding = '50px 20px';
+                welcomeDiv.style.color = '#6c757d';
+                welcomeDiv.innerHTML = `
+                    <h3>¡Bienvenido a BirsorturIA!</h3>
+                    <p>Puedes enviar mensajes, subir archivos PDF/TXT/Imágenes, y elegir entre diferentes modelos.</p>
+                    <p>Usa el botón ☰ para acceder a la configuración.</p>
+                    <p>Para analizar imagenes selecciona el modelo Meta Llama 4</p>
+                `;
+                chatOutput.appendChild(welcomeDiv);
+                return;
+            }
+
+            conversationHistory.forEach((message, index) => {
+                // Filtrar mensajes del sistema
+                if (message.role === 'system') return;
+
+                const messageWrapper = document.createElement('div');
+                messageWrapper.classList.add('message-wrapper', message.role === 'user' ? 'user-message' : 'ai-message');
+
+                if (message.error) {
+                    messageWrapper.classList.add('error-message');
+                }
+
+                const messageContent = document.createElement('div');
+                messageContent.classList.add('message-content');
+
+                let contentHTML = `<strong>${message.role === 'user' ? 'Tú' : 'IA'}:</strong><br>`;
+                if (message.role === 'user' && message.fileName) {
+                    contentHTML += `<p style="font-style: italic; color: #6c757d;">📎 Archivo: ${message.fileName}</p>`;
+                }
+
+                // Handle image display for user messages
+                if (message.role === 'user' && message.fileType && message.fileType.startsWith('image/')) {
+                    contentHTML += `<img src="${message.fileUrl}" alt="Attached Image" style="max-width: 200px; max-height: 200px; border-radius: 6px; margin-top: 10px;">`;
+                }
+
+                // Procesar contenido sin truncar
+                if (message.role === 'assistant') {
+                    // Usar marked para parsear markdown, asegurándose de no truncar
+                    const fullContent = message.content || '';
+                    contentHTML += marked.parse(fullContent);
+                } else {
+                    contentHTML += escapeHtml(message.content || '');
+                }
+
+                messageContent.innerHTML = contentHTML;
+
+                // Mejorar tablas para móvil
+                if (message.role === 'assistant') {
+                    const tables = messageContent.querySelectorAll('table');
+                    tables.forEach(table => {
+                        const headers = table.querySelectorAll('th');
+                        const rows = table.querySelectorAll('tbody tr, tr:not(:first-child)');
+
+                        // Crear array de headers para referencia
+                        const headerTexts = Array.from(headers).map(h => h.textContent.trim());
+
+                        rows.forEach(row => {
+                            const cells = row.querySelectorAll('td');
+                            cells.forEach((cell, index) => {
+                                // Usar el header correspondiente o crear uno genérico
+                                const labelText = headerTexts[index] || `Campo ${index + 1}`;
+                                cell.setAttribute('data-label', labelText);
+
+                                // Asegurar que el contenido sea legible
+                                if (cell.textContent.trim() === '') {
+                                    cell.textContent = '-';
+                                }
+                            });
+                        });
+                    });
+
+                    if (message.content && !message.error) {
+                        messageContent.appendChild(createCopyButton(message.content));
+                    }
+                }
+
+                messageWrapper.appendChild(messageContent);
+
+                // Agregar información adicional si existe
+                if (message.model || message.mode) {
+                    const metaDiv = document.createElement('div');
+                    metaDiv.className = 'message-meta';
+                    metaDiv.style.fontSize = '0.8rem';
+                    metaDiv.style.color = '#6c757d';
+                    metaDiv.style.marginTop = '5px';
+
+                    let metaText = '';
+                    if (message.model) metaText += `Modelo: ${message.model}`;
+                    if (message.mode) metaText += ` | Modo: ${message.mode}`;
+
+                    metaDiv.textContent = metaText;
+                    messageWrapper.appendChild(metaDiv);
+                }
+
+                const timestampDiv = document.createElement('div');
+                timestampDiv.className = 'timestamp';
+                timestampDiv.textContent = formatTimestamp(message.timestamp);
+                messageWrapper.appendChild(timestampDiv);
+                chatOutput.appendChild(messageWrapper);
+            });
+
+            // Highlight code blocks
+            if (typeof hljs !== 'undefined') {
+                hljs.highlightAll();
+            }
+
+            // Scroll to bottom
+            setTimeout(() => {
+                chatOutput.scrollTop = chatOutput.scrollHeight;
+            }, 100);
+        }
+
+        // Función auxiliar para escapar HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function createCopyButton(textToCopy) { 
+            const button = document.createElement('button'); 
+            button.className = 'copy-btn'; 
+            button.title = 'Copiar texto'; 
+            button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>`; 
+            button.dataset.text = textToCopy; 
+            return button; 
+        }
+
+        // ======= ENVÍO DE MENSAJES =======
+        async function sendPrompt() {
+            const prompt = promptInput.value.trim();
+            if (prompt === '' && !attachedFile) return;
+
+            // Handle file upload if a file is attached
+            if (attachedFile) {
+                await handleFileUpload();
+                return; // Exit after handling file, let the next turn handle prompt
+            }
+
+            // Create chat if it doesn't exist
+            if (!currentChatId) {
+                startNewChat();
+            }
+
+            // Add user message to conversation history
+            const userMessage = {
+                role: 'user',
+                content: prompt,
+                timestamp: new Date().toISOString()
+            };
+
+            conversationHistory.push(userMessage);
+            saveCurrentConversation();
+            renderConversation();
+
+            promptInput.value = '';
+            autoResizeTextarea();
+            promptInput.disabled = true;
+            sendButton.disabled = true;
+            sendButton.textContent = 'Pensando...';
+
+            try {
+                // Filter only user and assistant messages for the history
+                const messagesToSend = conversationHistory
+                    .filter(msg => msg.role === 'user' || msg.role === 'assistant')
+                    .map(msg => ({
+                        role: msg.role,
+                        content: msg.content
+                    }));
+
+                // Limit history to the last 20 messages to avoid token limits
+                const recentMessages = messagesToSend.slice(-20);
+
+                const requestData = {
+                    message: prompt,
+                    model: modelSelect.value,
+                    mode: modeSelect.value,
+                    conversation_history: recentMessages
+                };
+
+                const context = contextInput.value.trim();
+                if (context) {
+                    requestData.context = context;
+                }
+
+                const response = await fetch(`${API_BASE_URL}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    const aiMessage = {
+                        role: 'assistant',
+                        content: data.response,
+                        timestamp: new Date().toISOString(),
+                        model: data.model,
+                        mode: data.mode
+                    };
+                    conversationHistory.push(aiMessage);
+                    saveCurrentConversation();
+                    renderConversation();
+                } else {
+                    throw new Error(data.message || 'Error al obtener respuesta');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`Error: ${error.message}`);
+                // Add error message to the chat
+                const errorMessage = {
+                    role: 'assistant',
+                    content: `❌ Error: ${error.message}`,
+                    timestamp: new Date().toISOString(),
+                    error: true
+                };
+                conversationHistory.push(errorMessage);
+                renderConversation();
+            } finally {
+                promptInput.disabled = false;
+                sendButton.disabled = false;
+                sendButton.textContent = 'Enviar';
+                promptInput.focus();
+            }
+        }
+
+        async function handleFileUpload() {
+            if (!attachedFile) return;
+
+            const prompt = promptInput.value.trim();
+            const userMessage = {
+                role: 'user',
+                content: prompt || `Analiza esta imagen: ${attachedFile.name}`,
+                fileName: attachedFile.name,
+                fileType: attachedFile.type,
+                fileUrl: URL.createObjectURL(attachedFile),
+                timestamp: new Date().toISOString()
+            };
+
+            conversationHistory.push(userMessage);
+            saveCurrentConversation();
+            renderConversation();
+
+            promptInput.value = '';
+            autoResizeTextarea();
+            promptInput.disabled = true;
+            sendButton.disabled = true;
+            sendButton.textContent = 'Analizando imagen...';
+
+            try {
+                // Check if it's an image file
+                if (attachedFile.type.startsWith('image/')) {
+                    // Handle image with vision endpoint
+                    const formData = new FormData();
+                    formData.append('image', attachedFile);
+                    formData.append('message', prompt || 'Describe lo que ves en esta imagen de forma detallada');
+                    formData.append('model', 'meta-llama/llama-4-scout-17b-16e-instruct'); // Use vision model
+
+                    const response = await fetch(`${API_BASE_URL}/chat/vision`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok && data.success) {
+                        const aiMessage = {
+                            role: 'assistant',
+                            content: data.response,
+                            timestamp: new Date().toISOString(),
+                            model: data.model,
+                            mode: data.mode
+                        };
+                        conversationHistory.push(aiMessage);
+                        saveCurrentConversation();
+                        renderConversation();
+                    } else {
+                        let errorMessage = 'Error al analizar imagen';
+                        if (data.error && data.message) {
+                            errorMessage = `${data.error}: ${data.message}`;
+                        } else if (data.message) {
+                            errorMessage = data.message;
+                        }
+                        throw new Error(errorMessage);
+                    }
+                } else {
+                    // Handle non-image files (PDF, TXT) with upload endpoint
+                    const formData = new FormData();
+                    formData.append('file', attachedFile);
+                    formData.append('process_with_ai', 'true');
+                    formData.append('model', modelSelect.value);
+
+                    if (prompt) {
+                        formData.append('question', prompt);
+                    }
+
+                    const response = await fetch(`${API_BASE_URL}/upload`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok && data.success) {
+                        let responseText = `✅ Archivo procesado: **${data.file_info.filename}**\n\n`;
+                        responseText += `📊 Tamaño: ${formatFileSize(data.file_info.size)}\n`;
+                        responseText += `📝 Palabras: ${data.file_info.word_count.toLocaleString()}\n\n`;
+
+                        if (data.ai_analysis) {
+                            responseText += `**Análisis de IA:**\n${data.ai_analysis.response}`;
+                        }
+
+                        const aiMessage = {
+                            role: 'assistant',
+                            content: responseText,
+                            timestamp: new Date().toISOString(),
+                            model: data.ai_analysis?.model || modelSelect.value
+                        };
+                        conversationHistory.push(aiMessage);
+                        saveCurrentConversation();
+                        renderConversation();
+                    } else {
+                        throw new Error(data.message || 'Error al procesar archivo');
+                    }
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                const errorMessage = {
+                    role: 'assistant',
+                    content: `❌ Error al procesar archivo: ${error.message}`,
+                    timestamp: new Date().toISOString(),
+                    error: true
+                };
+                conversationHistory.push(errorMessage);
+                renderConversation();
+            } finally {
+                // Don't revoke URL yet, keep it for display
+                attachedFile = null;
+                fileInput.value = '';
+                attachmentPreviewContainer.style.display = 'none';
+                // Remove image preview if it exists
+                const imagePreview = document.getElementById('image-preview');
+                if (imagePreview) {
+                    imagePreview.remove();
+                }
+                promptInput.disabled = false;
+                sendButton.disabled = false;
+                sendButton.textContent = 'Enviar';
+                promptInput.focus();
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // ======= EVENT LISTENERS =======
+        chatOutput.addEventListener('click', function(event) { 
+            const copyBtn = event.target.closest('.copy-btn'); 
+            if (copyBtn) { 
+                const textToCopy = copyBtn.dataset.text; 
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    copyBtn.classList.add('copied'); 
+                    copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M9 16.17L4.83 12 3.42 13.41 9 19 21 7l-1.41-1.41L9 16.17z"/></svg>`; 
+                    setTimeout(() => { 
+                        copyBtn.classList.remove('copied'); 
+                        copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>`; 
+                    }, 1500); 
+                }).catch(err => {
+                    console.error('Copy failed:', err);
+                });
+            } 
+        });
+
+        sendButton.addEventListener('click', sendPrompt);
+        promptInput.addEventListener('keypress', function(event) { 
+            if (event.key === 'Enter' && !event.shiftKey) { 
+                event.preventDefault(); 
+                sendPrompt(); 
+            } 
+        });
+
+        newChatBtn.addEventListener('click', startNewChat);
+        savedChatsList.addEventListener('click', (event) => { 
+            const listItem = event.target.closest('li'); 
+            const deleteButton = event.target.closest('.delete-chat-btn'); 
+            if (deleteButton) { 
+                event.stopPropagation(); 
+                deleteConversation(listItem.dataset.chatId); 
+            } else if (listItem) { 
+                loadConversation(listItem.dataset.chatId); 
+            } 
+        });
+
+        // ======= INICIALIZACIÓN =======
+        checkAPIStatus();
+        startNewChat();
+        updateSavedChatsList();
+
+        // Auto-focus en el input
+        promptInput.focus();
+
+        // Handle paste events for images
+        document.addEventListener('paste', handlePaste);
+
+        function handlePaste(event) {
+            const items = event.clipboardData.items;
+            
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                
+                if (item.type.indexOf('image') !== -1) {
+                    event.preventDefault();
+                    
+                    const file = item.getAsFile();
+                    if (file) {
+                        // Simulate file selection
+                        attachedFile = file;
+                        attachmentFilename.textContent = `Imagen pegada - ${file.name || 'clipboard.png'}`;
+                        attachmentPreviewContainer.style.display = 'inline-block';
+
+                        // Show image preview
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            let imagePreview = document.getElementById('image-preview');
+                            if (!imagePreview) {
+                                imagePreview = document.createElement('img');
+                                imagePreview.id = 'image-preview';
+                                imagePreview.style.maxWidth = '200px';
+                                imagePreview.style.maxHeight = '200px';
+                                imagePreview.style.borderRadius = '6px';
+                                imagePreview.style.marginTop = '10px';
+                                imagePreview.style.display = 'block';
+                                attachmentPreviewContainer.appendChild(imagePreview);
+                            }
+                            imagePreview.src = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                        
+                        // Focus on input after paste
+                        promptInput.focus();
+                        break;
+                    }
+                }
+            }
+        }
     </script>
-  </body>
+</body>
 </html>
