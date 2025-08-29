@@ -31,6 +31,18 @@ class Config:
             'name': 'Gemma 7B',
             'description': 'Google\'s efficient instruction-tuned model',
             'context_window': 8192
+        },
+        'gpt-oss-20b': {
+            'id': 'openai/gpt-oss-20b',
+            'name': 'GPT-OSS 20B',
+            'description': 'OpenAI\'s Como ChatGPT rapido',
+            'context_window': 131072
+        },
+        'gpt-oss-120b': {
+            'id': 'openai/gpt-oss-120b',
+            'name': 'GPT-OSS 20B',
+            'description': 'OpenAI\'s Como ChatGPT Potente',
+            'context_window': 131072
         }
     }
 
